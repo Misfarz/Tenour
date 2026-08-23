@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { registerSchema, loginSchema } from "./auth.schemas";
-import { AuthService } from "./auth.service";
+import { RegisterUserUseCase } from "./use-cases/register-user.use-case";
+import { LoginUserUseCase } from "./use-cases/login-user.use-case";
+import { RefreshTokenUseCase } from "./use-cases/refresh-token.use-case";
+import { GetCurrentUserUseCase } from "./use-cases/get-current-user.use-case";
 import { AuthenticatedRequest } from "../../shared/middleware/auth.middleware";
 
 const COOKIE_OPTIONS = {
@@ -23,7 +26,7 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.register(validationResult.data);
+      const result = await RegisterUserUseCase.execute(validationResult.data);
 
       res.cookie("refreshToken", result.refreshToken, COOKIE_OPTIONS);
       res.cookie("accessToken", result.accessToken, {
@@ -38,8 +41,7 @@ export class AuthController {
       });
     } catch (error: any) {
       const message = error.message || "Registration failed";
-      const statusCode = message === "Email already exists" ? 400 : 400;
-      res.status(statusCode).json({
+      res.status(400).json({
         success: false,
         message,
       });
@@ -58,7 +60,7 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.login(validationResult.data);
+      const result = await LoginUserUseCase.execute(validationResult.data);
 
       res.cookie("refreshToken", result.refreshToken, COOKIE_OPTIONS);
       res.cookie("accessToken", result.accessToken, {
@@ -91,7 +93,7 @@ export class AuthController {
         return;
       }
 
-      const result = await AuthService.refreshToken(refreshToken);
+      const result = await RefreshTokenUseCase.execute(refreshToken);
 
       res.cookie("refreshToken", result.refreshToken, COOKIE_OPTIONS);
       res.cookie("accessToken", result.accessToken, {
@@ -131,7 +133,7 @@ export class AuthController {
         return;
       }
 
-      const data = await AuthService.getUserById(req.user.userId);
+      const data = await GetCurrentUserUseCase.execute(req.user.userId);
 
       res.status(200).json({
         success: true,

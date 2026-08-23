@@ -104,9 +104,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setMemberships(res.data.memberships || []);
 
         if (res.data.organization) {
-          router.push("/dashboard");
+          router.push("/buyer/dashboard");
         } else {
-          router.push("/org-setup");
+          router.push("/buyer/setup-organization");
         }
       }
     } finally {
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setOrganization(null);
         setRole(null);
         setMemberships([]);
-        router.push("/org-setup");
+        router.push("/buyer/setup-organization");
       }
     } finally {
       setIsLoading(false);
@@ -146,7 +146,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setOrganization(res.data.organization);
         setRole(res.data.role || "ORG_ADMIN");
         await checkAuth();
-        router.push("/dashboard");
+        router.push("/buyer/dashboard");
       }
     } finally {
       setIsLoading(false);
@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setRole(null);
       setMemberships([]);
       setIsLoading(false);
-      router.push("/login");
+      router.push("/buyer/login");
     }
   };
 

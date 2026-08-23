@@ -2,7 +2,7 @@
 
 import { useAuth } from "@/context/auth-context";
 import Link from "next/link";
-import { LogOut, User as UserIcon, Mail, ShieldCheck, Sparkles, Loader2, ArrowRight } from "lucide-react";
+import { LogOut, User as UserIcon, Mail, ShieldCheck, Sparkles, Loader2, ArrowRight, Building2 } from "lucide-react";
 
 export default function HomePage() {
   const { user, organization, isLoading, isAuthenticated, logout } = useAuth();
@@ -27,22 +27,23 @@ export default function HomePage() {
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">Tenour Platform</h1>
           <p className="text-neutral-400 text-sm mb-8">
-            Experience clean architecture and secure authentication.
+            Modern SaaS Procurement & Accounts Infrastructure.
           </p>
 
           <div className="flex flex-col gap-3">
             <Link
-              href="/login"
-              className="w-full py-3 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm rounded-xl shadow-lg shadow-indigo-500/25 transition flex items-center justify-center gap-2"
+              href="/buyer/register"
+              className="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 transition flex items-center justify-center gap-2"
             >
-              <span>Sign In</span>
+              <span>I'm a Buyer</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
+
             <Link
-              href="/register"
+              href="/buyer/login"
               className="w-full py-3 px-4 bg-neutral-800/80 hover:bg-neutral-800 text-neutral-200 font-medium text-sm rounded-xl border border-neutral-700/80 transition flex items-center justify-center"
             >
-              Create Account
+              Buyer Sign In
             </Link>
           </div>
         </div>
@@ -100,10 +101,10 @@ export default function HomePage() {
             </p>
             <div className="mt-6">
               <Link
-                href={organization ? "/dashboard" : "/org-setup"}
+                href={organization ? "/buyer/dashboard" : "/buyer/setup-organization"}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm shadow-lg shadow-indigo-500/25 transition"
               >
-                <span>{organization ? "Go to Dashboard" : "Set up Organization"}</span>
+                <span>{organization ? "Go to Buyer Dashboard" : "Set up Organization"}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

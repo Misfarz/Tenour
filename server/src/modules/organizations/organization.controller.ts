@@ -1,6 +1,6 @@
 import { Response } from "express";
 import { createOrganizationSchema } from "./organization.schemas";
-import { OrganizationService } from "./organization.service";
+import { CreateOrganizationUseCase } from "./use-cases/create-organization.use-case";
 import { AuthenticatedRequest } from "../../shared/middleware/auth.middleware";
 
 export class OrganizationController {
@@ -21,7 +21,7 @@ export class OrganizationController {
         return;
       }
 
-      const result = await OrganizationService.createOrganization(
+      const result = await CreateOrganizationUseCase.execute(
         req.user.userId,
         validationResult.data
       );
