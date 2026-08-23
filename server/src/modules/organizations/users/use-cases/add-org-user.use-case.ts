@@ -29,7 +29,8 @@ export class AddOrgUserUseCase {
     const invitationUrl = `${clientUrl}/buyer/accept-invitation?token=${invitation.token}`;
 
     return {
-      id: invitation.id,
+      id: invitation.memberId,
+      invitationId: invitation.id,
       email: invitation.email,
       name: invitation.name,
       role: invitation.role,

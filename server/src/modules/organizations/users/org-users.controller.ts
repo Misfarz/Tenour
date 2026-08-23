@@ -4,6 +4,7 @@ import { GetOrgUsersUseCase } from "./use-cases/get-org-users.use-case";
 import { AddOrgUserUseCase } from "./use-cases/add-org-user.use-case";
 import { UpdateOrgUserRoleUseCase } from "./use-cases/update-org-user-role.use-case";
 import { UpdateOrgUserStatusUseCase } from "./use-cases/update-org-user-status.use-case";
+import { DeleteOrgUserUseCase } from "./use-cases/delete-org-user.use-case";
 import {
   addOrgUserSchema,
   updateOrgUserRoleSchema,
@@ -123,6 +124,27 @@ export class OrgUsersController {
       res.status(statusCode).json({
         success: false,
         message: error.message || "Failed to update user status",
+      });
+    }
+  }
+
+  static async deleteUser(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
+    try {
+      const organizationId = req.tenant!.organizationId;
+      const targetId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+      const result = await DeleteOrgUserUseCase.execute(organizationId, targetId);
+
+      res.status(200).json({
+        success: true,
+        message: "User deleted successfully from organization",
+        data: result,
+      });
+    } catch (error: any) {
+      const statusCode = error.message === "User not found in your organization" ? 404 : 400;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || "Failed to delete user",
       });
     }
   }

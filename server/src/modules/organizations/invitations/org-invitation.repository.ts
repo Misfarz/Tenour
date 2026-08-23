@@ -108,6 +108,7 @@ export class OrgInvitationRepository {
 
     return {
       id: invitation.id,
+      memberId: member.id,
       token: invitation.token,
       email: invitation.email,
       name: invitation.member.user.name,

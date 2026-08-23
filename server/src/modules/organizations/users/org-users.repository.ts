@@ -25,7 +25,11 @@ export class OrgUsersRepository {
     return prisma.organizationMember.findFirst({
       where: {
         organizationId,
-        OR: [{ id: targetId }, { userId: targetId }],
+        OR: [
+          { id: targetId },
+          { userId: targetId },
+          { invitation: { id: targetId } },
+        ],
       },
       include: {
         user: true,
@@ -158,6 +162,12 @@ export class OrgUsersRepository {
     });
   }
 
+  static async deleteMember(memberId: string) {
+    return prisma.organizationMember.delete({
+      where: { id: memberId },
+    });
+  }
+
   static async countActiveAdmins(organizationId: string) {
     const adminRoles = await prisma.role.findMany({
       where: {
@@ -172,6 +182,24 @@ export class OrgUsersRepository {
       where: {
         organizationId,
         status: "ACTIVE",
+        roleId: { in: adminRoleIds },
+      },
+    });
+  }
+
+  static async countTotalAdmins(organizationId: string) {
+    const adminRoles = await prisma.role.findMany({
+      where: {
+        organizationId,
+        name: "ORG_ADMIN",
+      },
+    });
+
+    const adminRoleIds = adminRoles.map((r) => r.id);
+
+    return prisma.organizationMember.count({
+      where: {
+        organizationId,
         roleId: { in: adminRoleIds },
       },
     });

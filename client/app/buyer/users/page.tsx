@@ -16,6 +16,7 @@ import {
   Check,
   LogOut,
   Mail,
+  Trash2,
 } from "lucide-react";
 
 interface OrgUser {
@@ -200,6 +201,25 @@ export default function BuyerUsersPage() {
     }
   };
 
+  const handleDeleteUser = async (memberId: string, name: string) => {
+    if (!confirm(`Are you sure you want to remove ${name} from your organization?`)) return;
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const res = await apiClient(`/organizations/users/${memberId}`, {
+        method: "DELETE",
+      });
+
+      if (res.success) {
+        setSuccess(`User ${name} deleted successfully.`);
+        fetchUsersAndDepts();
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to delete user");
+    }
+  };
+
   const copyInviteLink = () => {
     if (createdInviteUrl) {
       navigator.clipboard.writeText(createdInviteUrl);
@@ -377,18 +397,27 @@ export default function BuyerUsersPage() {
                       )}
                     </td>
                     <td className="py-4 px-6 text-right">
-                      {u.status !== "INVITED" && (
+                      <div className="flex items-center justify-end gap-2">
+                        {u.status !== "INVITED" && (
+                          <button
+                            onClick={() => handleStatusToggle(u.id, u.status)}
+                            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
+                              u.status === "ACTIVE"
+                                ? "bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200"
+                                : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
+                            }`}
+                          >
+                            {u.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleStatusToggle(u.id, u.status)}
-                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
-                            u.status === "ACTIVE"
-                              ? "bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200"
-                              : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
-                          }`}
+                          onClick={() => handleDeleteUser(u.id, u.name)}
+                          className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer"
+                          title="Delete user from organization"
                         >
-                          {u.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                          <Trash2 className="w-4 h-4" />
                         </button>
-                      )}
+                      </div>
                     </td>
                   </tr>
                 ))}

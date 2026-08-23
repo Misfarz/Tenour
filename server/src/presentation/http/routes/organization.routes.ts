@@ -42,6 +42,13 @@ router.patch(
   requireRole(BuyerRole.ORG_ADMIN),
   OrgUsersController.updateStatus
 );
+router.delete(
+  "/users/:id",
+  authenticate,
+  tenantContext,
+  requireRole(BuyerRole.ORG_ADMIN),
+  OrgUsersController.deleteUser
+);
 
 // Department Management (Day 3)
 router.get("/departments", authenticate, tenantContext, DepartmentController.getDepartments);

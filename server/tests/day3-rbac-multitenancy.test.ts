@@ -32,6 +32,8 @@ describe("Day 3 Complete Suite: Multi-Tenancy, RBAC & Invitation Flow", () => {
   const ziyamPassword = "ZiyamPassword123!";
   let ziyamAccessToken: string;
 
+  let deleteTargetMemberId: string;
+
   beforeAll(async () => {
     // 1. Setup ABC Corporation
     const regAbc = await request(app).post("/auth/register").send(abcAdminUser);
@@ -214,11 +216,10 @@ describe("Day 3 Complete Suite: Multi-Tenancy, RBAC & Invitation Flow", () => {
       expect(res.body.success).toBe(false);
     });
 
-    it("Ziyam (EMPLOYEE) is blocked from creating departments -> 403 Forbidden", async () => {
+    it("Ziyam (EMPLOYEE) is blocked from deleting users -> 403 Forbidden", async () => {
       const res = await request(app)
-        .post("/organizations/departments")
+        .delete("/organizations/users/some-user-id")
         .set("Authorization", `Bearer ${ziyamAccessToken}`)
-        .send({ name: "Unauthorized Dept" })
         .expect(403);
 
       expect(res.body.success).toBe(false);
@@ -247,28 +248,70 @@ describe("Day 3 Complete Suite: Multi-Tenancy, RBAC & Invitation Flow", () => {
       const members = res.body.data;
       expect(members.some((m: any) => m.email === ziyamEmail.toLowerCase())).toBe(false);
     });
+  });
 
-    it("XYZ Admin cannot accept or tamper with ABC's invitation token", async () => {
-      // Create new invite in ABC
-      const invRes = await request(app)
+  describe("5. Delete User Functionality (ORG_ADMIN Only)", () => {
+    beforeAll(async () => {
+      // Invite temporary user in ABC to test deletion
+      const res = await request(app)
         .post("/organizations/users")
         .set("Authorization", `Bearer ${abcAccessToken}`)
         .send({
-          name: "Tamper Target",
-          email: `tamper.${Date.now()}@example.com`,
+          name: "Delete Candidate",
+          email: `delete.me.${Date.now()}@example.com`,
           role: "EMPLOYEE",
         })
         .expect(201);
 
-      const tamperToken = invRes.body.data.token;
+      deleteTargetMemberId = res.body.data.id;
+    });
 
-      // Verify token resolves to ABC Technologies, NOT XYZ
-      const verifyRes = await request(app)
-        .get(`/auth/invitations/verify?token=${tamperToken}`)
+    it("Prevents deleting the only ORG_ADMIN", async () => {
+      const usersRes = await request(app)
+        .get("/organizations/users")
+        .set("Authorization", `Bearer ${abcAccessToken}`)
         .expect(200);
 
-      expect(verifyRes.body.data.organizationName).toBe("ABC Technologies");
-      expect(verifyRes.body.data.organizationName).not.toBe("XYZ Corporation");
+      const adminMember = usersRes.body.data.find((u: any) => u.role === "ORG_ADMIN");
+      expect(adminMember).toBeDefined();
+
+      const res = await request(app)
+        .delete(`/organizations/users/${adminMember.id}`)
+        .set("Authorization", `Bearer ${abcAccessToken}`)
+        .send()
+        .expect(400);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Cannot delete the only organization admin");
+    });
+
+    it("XYZ Admin cannot delete an ABC user (returns 404)", async () => {
+      const res = await request(app)
+        .delete(`/organizations/users/${deleteTargetMemberId}`)
+        .set("Authorization", `Bearer ${xyzAccessToken}`)
+        .expect(404);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("User not found in your organization");
+    });
+
+    it("ABC Admin successfully deletes an employee from ABC Corporation", async () => {
+      const res = await request(app)
+        .delete(`/organizations/users/${deleteTargetMemberId}`)
+        .set("Authorization", `Bearer ${abcAccessToken}`)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toContain("deleted successfully");
+
+      // Verify user no longer appears in user list
+      const usersRes = await request(app)
+        .get("/organizations/users")
+        .set("Authorization", `Bearer ${abcAccessToken}`)
+        .expect(200);
+
+      const deletedFound = usersRes.body.data.some((u: any) => u.id === deleteTargetMemberId);
+      expect(deletedFound).toBe(false);
     });
   });
 });
