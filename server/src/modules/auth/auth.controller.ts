@@ -4,6 +4,8 @@ import { RegisterUserUseCase } from "./use-cases/register-user.use-case";
 import { LoginUserUseCase } from "./use-cases/login-user.use-case";
 import { RefreshTokenUseCase } from "./use-cases/refresh-token.use-case";
 import { GetCurrentUserUseCase } from "./use-cases/get-current-user.use-case";
+import { VerifyInvitationUseCase } from "./use-cases/verify-invitation.use-case";
+import { AcceptInvitationUseCase } from "./use-cases/accept-invitation.use-case";
 import { AuthenticatedRequest } from "../../shared/middleware/auth.middleware";
 
 const COOKIE_OPTIONS = {
@@ -118,8 +120,8 @@ export class AuthController {
   }
 
   static async logout(_req: Request, res: Response): Promise<void> {
-    res.clearCookie("refreshToken");
-    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken", COOKIE_OPTIONS);
+    res.clearCookie("accessToken", COOKIE_OPTIONS);
     res.status(200).json({
       success: true,
       message: "Logged out successfully",
@@ -143,6 +145,41 @@ export class AuthController {
       res.status(404).json({
         success: false,
         message: error.message || "User not found",
+      });
+    }
+  }
+
+  static async verifyInvitation(req: Request, res: Response): Promise<void> {
+    try {
+      const token = (req.query.token as string) || req.body?.token;
+      const data = await VerifyInvitationUseCase.execute(token);
+
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Invalid invitation token",
+      });
+    }
+  }
+
+  static async acceptInvitation(req: Request, res: Response): Promise<void> {
+    try {
+      const { token, password } = req.body;
+      const data = await AcceptInvitationUseCase.execute(token, password);
+
+      res.status(200).json({
+        success: true,
+        message: "Invitation accepted successfully. Account is now active.",
+        data,
+      });
+    } catch (error: any) {
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to accept invitation",
       });
     }
   }

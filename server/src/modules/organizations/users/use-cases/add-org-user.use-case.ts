@@ -1,5 +1,5 @@
 import { AddOrgUserInput } from "../org-users.schemas";
-import { OrgUsersRepository } from "../org-users.repository";
+import { OrgInvitationRepository } from "../../invitations/org-invitation.repository";
 import { prisma } from "../../../../infrastructure/database/prisma/prisma.client";
 
 export class AddOrgUserUseCase {
@@ -17,23 +17,27 @@ export class AddOrgUserUseCase {
       }
     }
 
-    const member = await OrgUsersRepository.addMemberToOrg({
+    const invitation = await OrgInvitationRepository.createInvitation({
       organizationId,
       name: input.name,
       email: input.email,
-      password: input.password,
       roleName: input.role,
       departmentId: input.departmentId,
     });
 
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    const invitationUrl = `${clientUrl}/buyer/accept-invitation?token=${invitation.token}`;
+
     return {
-      id: member.id,
-      userId: member.userId,
-      name: member.user.name,
-      email: member.user.email,
-      role: member.role.name,
-      department: member.department ? { id: member.department.id, name: member.department.name } : null,
-      status: member.status,
+      id: invitation.id,
+      email: invitation.email,
+      name: invitation.name,
+      role: invitation.role,
+      organizationName: invitation.organizationName,
+      status: invitation.status,
+      token: invitation.token,
+      expiresAt: invitation.expiresAt,
+      invitationUrl,
     };
   }
 }

@@ -28,6 +28,7 @@ model Organization {
   members     OrganizationMember[]
   departments Department[]
   roles       Role[]
+  invitations Invitation[]
 
   @@map("organizations")
 }
@@ -41,6 +42,7 @@ model Role {
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @updatedAt
   members        OrganizationMember[]
+  invitations    Invitation[]
 
   @@map("roles")
 }
@@ -70,7 +72,25 @@ model OrganizationMember {
   status         String       @default("ACTIVE")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+  invitation     Invitation?
 
   @@unique([organizationId, userId])
   @@map("organization_members")
+}
+
+model Invitation {
+  id             String             @id @default(uuid())
+  token          String             @unique
+  organizationId String
+  organization   Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberId       String             @unique
+  member         OrganizationMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  email          String
+  roleId         String
+  role           Role               @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  expiresAt      DateTime
+  usedAt         DateTime?
+  createdAt      DateTime           @default(now())
+
+  @@map("invitations")
 }

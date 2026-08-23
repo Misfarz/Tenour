@@ -8,16 +8,14 @@ import { apiClient } from "@/lib/api-client";
 import {
   Users as UsersIcon,
   UserPlus,
-  ShieldCheck,
   Building2,
   Loader2,
   Lock,
   ArrowLeft,
-  CheckCircle2,
-  XCircle,
-  Edit2,
+  Copy,
+  Check,
   LogOut,
-  ChevronRight,
+  Mail,
 } from "lucide-react";
 
 interface OrgUser {
@@ -50,9 +48,11 @@ export default function BuyerUsersPage() {
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [addName, setAddName] = useState<string>("");
   const [addEmail, setAddEmail] = useState<string>("");
-  const [addPassword, setAddPassword] = useState<string>("Password123!");
   const [addRole, setAddRole] = useState<string>("EMPLOYEE");
   const [addDeptId, setAddDeptId] = useState<string>("");
+
+  const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
+  const [copied, setCopied] = useState<boolean>(false);
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -135,26 +135,28 @@ export default function BuyerUsersPage() {
     setSubmitting(true);
 
     try {
-      const res = await apiClient("/organizations/users", {
+      const res = await apiClient<any>("/organizations/users", {
         method: "POST",
         body: JSON.stringify({
           name: addName,
           email: addEmail,
-          password: addPassword,
           role: addRole,
           departmentId: addDeptId || null,
         }),
       });
 
-      if (res.success) {
-        setSuccess(`User ${addName} added successfully.`);
+      if (res.success && res.data) {
+        setSuccess(`Invitation created for ${addName} (${addEmail}).`);
+        if (res.data.invitationUrl) {
+          setCreatedInviteUrl(res.data.invitationUrl);
+        }
         setShowAddModal(false);
         setAddName("");
         setAddEmail("");
         fetchUsersAndDepts();
       }
     } catch (err: any) {
-      setError(err.message || "Failed to add user");
+      setError(err.message || "Failed to invite user");
     } finally {
       setSubmitting(false);
     }
@@ -195,6 +197,14 @@ export default function BuyerUsersPage() {
       }
     } catch (err: any) {
       setError(err.message || "Failed to update status");
+    }
+  };
+
+  const copyInviteLink = () => {
+    if (createdInviteUrl) {
+      navigator.clipboard.writeText(createdInviteUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -246,7 +256,7 @@ export default function BuyerUsersPage() {
               Manage Users & Roles
             </h1>
             <p className="text-slate-500 text-xs mt-1">
-              Add users to {organization?.name}, assign buyer roles, and set status.
+              Invite team members to {organization?.name}, assign roles, and set department permissions.
             </p>
           </div>
 
@@ -255,7 +265,7 @@ export default function BuyerUsersPage() {
             className="px-4 py-2.5 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
           >
             <UserPlus className="w-4 h-4" />
-            <span>Add User</span>
+            <span>Invite User</span>
           </button>
         </div>
 
@@ -271,6 +281,37 @@ export default function BuyerUsersPage() {
           <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
             <span>{success}</span>
             <button onClick={() => setSuccess(null)} className="font-bold cursor-pointer">✕</button>
+          </div>
+        )}
+
+        {/* Generated Invitation Link Banner */}
+        {createdInviteUrl && (
+          <div className="bg-[#EDF5FF] border border-[#D0E4FF] rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-[#1D72C9] font-bold text-sm">
+                <Mail className="w-4 h-4" />
+                <span>Development Invitation Link Generated</span>
+              </div>
+              <button onClick={() => setCreatedInviteUrl(null)} className="text-slate-400 hover:text-slate-600 font-bold text-xs">✕ Dismiss</button>
+            </div>
+            <p className="text-xs text-slate-600 mb-3">
+              Copy and open this link to test accepting the invitation and setting a password:
+            </p>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                readOnly
+                value={createdInviteUrl}
+                className="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-800 select-all"
+              />
+              <button
+                onClick={copyInviteLink}
+                className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? "Copied!" : "Copy Link"}</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -316,12 +357,19 @@ export default function BuyerUsersPage() {
                       )}
                     </td>
                     <td className="py-4 px-6">
-                      {u.status === "ACTIVE" ? (
+                      {u.status === "ACTIVE" && (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold">
                           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           Active
                         </span>
-                      ) : (
+                      )}
+                      {u.status === "INVITED" && (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                          Invited (Pending)
+                        </span>
+                      )}
+                      {u.status === "INACTIVE" && (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-500 font-semibold">
                           <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                           Inactive
@@ -329,16 +377,18 @@ export default function BuyerUsersPage() {
                       )}
                     </td>
                     <td className="py-4 px-6 text-right">
-                      <button
-                        onClick={() => handleStatusToggle(u.id, u.status)}
-                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
-                          u.status === "ACTIVE"
-                            ? "bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200"
-                            : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
-                        }`}
-                      >
-                        {u.status === "ACTIVE" ? "Deactivate" : "Activate"}
-                      </button>
+                      {u.status !== "INVITED" && (
+                        <button
+                          onClick={() => handleStatusToggle(u.id, u.status)}
+                          className={`px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer ${
+                            u.status === "ACTIVE"
+                              ? "bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200"
+                              : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"
+                          }`}
+                        >
+                          {u.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -348,12 +398,12 @@ export default function BuyerUsersPage() {
         </div>
       </main>
 
-      {/* Add User Modal */}
+      {/* Invite User Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-lg text-slate-950">Add Organization User</h3>
+              <h3 className="font-extrabold text-lg text-slate-950">Invite Organization User</h3>
               <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
             </div>
 
@@ -363,7 +413,7 @@ export default function BuyerUsersPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Rahul Manager"
+                  placeholder="Ziyam Employee"
                   value={addName}
                   onChange={(e) => setAddName(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-[#2383E2]"
@@ -375,7 +425,7 @@ export default function BuyerUsersPage() {
                 <input
                   type="email"
                   required
-                  placeholder="rahul@example.com"
+                  placeholder="ziyam@example.com"
                   value={addEmail}
                   onChange={(e) => setAddEmail(e.target.value)}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-[#2383E2]"
@@ -424,7 +474,7 @@ export default function BuyerUsersPage() {
                   disabled={submitting}
                   className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg font-semibold flex items-center gap-1.5"
                 >
-                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Add User"}
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Send Invitation"}
                 </button>
               </div>
             </form>

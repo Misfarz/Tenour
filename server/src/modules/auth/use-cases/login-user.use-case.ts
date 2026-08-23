@@ -10,6 +10,17 @@ export class LoginUserUseCase {
       throw new Error("Invalid email or password");
     }
 
+    const primaryMembership = user.memberships[0];
+
+    if (primaryMembership) {
+      if (primaryMembership.status === "INVITED") {
+        throw new Error("Please accept your invitation and set a password before logging in");
+      }
+      if (primaryMembership.status === "INACTIVE") {
+        throw new Error("Account is inactive in this organization");
+      }
+    }
+
     const isPasswordValid = await verifyPassword(user.password, input.password);
     if (!isPasswordValid) {
       throw new Error("Invalid email or password");
@@ -18,8 +29,6 @@ export class LoginUserUseCase {
     const tokenPayload = { userId: user.id, email: user.email };
     const accessToken = generateAccessToken(tokenPayload);
     const refreshToken = generateRefreshToken(tokenPayload);
-
-    const primaryMembership = user.memberships[0];
 
     return {
       user: {

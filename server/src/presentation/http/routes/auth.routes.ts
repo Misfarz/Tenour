@@ -10,5 +10,8 @@ router.post("/refresh", AuthController.refresh);
 router.post("/logout", AuthController.logout);
 router.get("/me", authenticate, AuthController.me);
 
-export default router;
+// Day 3 User Invitation Routes
+router.get("/invitations/verify", AuthController.verifyInvitation);
+router.post("/accept-invitation", AuthController.acceptInvitation);
 
+export default router;

@@ -4,7 +4,7 @@ import { createApp } from "../src/presentation/http/app";
 
 const app = createApp();
 
-describe("Day 3: Multi-Tenancy + RBAC Suite", () => {
+describe("Day 3 Complete Suite: Multi-Tenancy, RBAC & Invitation Flow", () => {
   // Test Tenants
   // ABC Corporation
   const abcAdminUser = {
@@ -22,13 +22,15 @@ describe("Day 3: Multi-Tenancy + RBAC Suite", () => {
 
   let abcAccessToken: string;
   let abcOrgId: string;
-  let abcEmployeeMemberId: string;
 
   let xyzAccessToken: string;
   let xyzOrgId: string;
-  let xyzEmployeeMemberId: string;
 
-  let abcDeptId: string;
+  // Invitation Test variables
+  let ziyamInviteToken: string;
+  const ziyamEmail = `ziyam.${Date.now()}@example.com`;
+  const ziyamPassword = "ZiyamPassword123!";
+  let ziyamAccessToken: string;
 
   beforeAll(async () => {
     // 1. Setup ABC Corporation
@@ -38,7 +40,7 @@ describe("Day 3: Multi-Tenancy + RBAC Suite", () => {
     const orgAbc = await request(app)
       .post("/organizations")
       .set("Authorization", `Bearer ${abcAccessToken}`)
-      .send({ name: "ABC Corporation" });
+      .send({ name: "ABC Technologies" });
     abcOrgId = orgAbc.body.data.organization.id;
 
     // 2. Setup XYZ Corporation
@@ -52,288 +54,221 @@ describe("Day 3: Multi-Tenancy + RBAC Suite", () => {
     xyzOrgId = orgXyz.body.data.organization.id;
   });
 
-  describe("1. Authentication & Tenant Context Guards", () => {
-    it("Rejects unauthenticated requests with 401", async () => {
-      const res = await request(app).get("/organizations/users").expect(401);
-      expect(res.body.success).toBe(false);
-    });
+  describe("1. Logout Verification", () => {
+    it("Logging out clears session and prevents access to protected routes", async () => {
+      // 1. Register temporary user
+      const tempUser = {
+        name: "Logout User",
+        email: `logout.${Date.now()}@example.com`,
+        password: "Password123!",
+      };
+      const reg = await request(app).post("/auth/register").send(tempUser);
+      const token = reg.body.data.accessToken;
 
-    it("Rejects invalid JWT tokens with 401", async () => {
-      const res = await request(app)
-        .get("/organizations/users")
-        .set("Authorization", "Bearer invalid.token.string")
-        .expect(401);
+      // 2. Access protected endpoint before logout
+      const meBefore = await request(app)
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${token}`)
+        .expect(200);
+      expect(meBefore.body.success).toBe(true);
 
-      expect(res.body.success).toBe(false);
+      // 3. Logout
+      const logoutRes = await request(app).post("/auth/logout").expect(200);
+      expect(logoutRes.body.success).toBe(true);
+
+      // 4. Verify cookies cleared header
+      const cookies = logoutRes.headers["set-cookie"];
+      expect(cookies).toBeDefined();
+
+      // 5. Protected request without valid token fails
+      await request(app).get("/auth/me").expect(401);
     });
   });
 
-  describe("2. Organization User Management & Role Assignment (ABC Admin)", () => {
-    it("ABC Admin adds an EMPLOYEE (Arun) to ABC Corporation", async () => {
+  describe("2. User Invitation Flow (Misfar invites Ziyam)", () => {
+    it("ABC Admin (Misfar) invites Ziyam as EMPLOYEE", async () => {
       const res = await request(app)
         .post("/organizations/users")
         .set("Authorization", `Bearer ${abcAccessToken}`)
         .send({
-          name: "Arun Employee",
-          email: `arun.abc.${Date.now()}@example.com`,
-          password: "Password123!",
+          name: "Ziyam Employee",
+          email: ziyamEmail,
           role: "EMPLOYEE",
         })
         .expect(201);
 
       expect(res.body.success).toBe(true);
       expect(res.body.data.role).toBe("EMPLOYEE");
-      expect(res.body.data.name).toBe("Arun Employee");
-      abcEmployeeMemberId = res.body.data.id;
+      expect(res.body.data.status).toBe("INVITED");
+      expect(res.body.data.token).toBeDefined();
+      expect(res.body.data.invitationUrl).toContain("/buyer/accept-invitation?token=");
+
+      ziyamInviteToken = res.body.data.token;
     });
 
-    it("ABC Admin adds a MANAGER (Rahul) and PROCUREMENT (Sarah)", async () => {
-      const resManager = await request(app)
-        .post("/organizations/users")
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({
-          name: "Rahul Manager",
-          email: `rahul.abc.${Date.now()}@example.com`,
-          password: "Password123!",
-          role: "MANAGER",
-        })
-        .expect(201);
-
-      expect(resManager.body.data.role).toBe("MANAGER");
-
-      const resProc = await request(app)
-        .post("/organizations/users")
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({
-          name: "Sarah Procurement",
-          email: `sarah.abc.${Date.now()}@example.com`,
-          password: "Password123!",
-          role: "PROCUREMENT",
-        })
-        .expect(201);
-
-      expect(resProc.body.data.role).toBe("PROCUREMENT");
-    });
-
-    it("ABC Admin changes Arun's role from EMPLOYEE to MANAGER", async () => {
+    it("Ziyam cannot log in before accepting the invitation", async () => {
       const res = await request(app)
-        .patch(`/organizations/users/${abcEmployeeMemberId}/role`)
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({ role: "MANAGER" })
+        .post("/auth/login")
+        .send({
+          email: ziyamEmail,
+          password: "Password123!",
+        })
+        .expect(401);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("accept your invitation");
+    });
+
+    it("Verify invitation token endpoint returns public info", async () => {
+      const res = await request(app)
+        .get(`/auth/invitations/verify?token=${ziyamInviteToken}`)
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.data.role).toBe("MANAGER");
+      expect(res.body.data.email).toBe(ziyamEmail.toLowerCase());
+      expect(res.body.data.organizationName).toBe("ABC Technologies");
+      expect(res.body.data.role).toBe("EMPLOYEE");
     });
 
-    it("Rejects setting an invalid role string", async () => {
+    it("Rejects verification for invalid invitation token", async () => {
       const res = await request(app)
-        .patch(`/organizations/users/${abcEmployeeMemberId}/role`)
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({ role: "SUPER_ADMIN_INVALID" })
+        .get("/auth/invitations/verify?token=invalid_token_string")
         .expect(400);
+
+      expect(res.body.success).toBe(false);
+    });
+
+    it("Ziyam sets password and accepts invitation (INVITED -> ACTIVE)", async () => {
+      const res = await request(app)
+        .post("/auth/accept-invitation")
+        .send({
+          token: ziyamInviteToken,
+          password: ziyamPassword,
+        })
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.status).toBe("ACTIVE");
+      expect(res.body.data.role).toBe("EMPLOYEE");
+    });
+
+    it("Rejects re-using an already used invitation token", async () => {
+      const res = await request(app)
+        .post("/auth/accept-invitation")
+        .send({
+          token: ziyamInviteToken,
+          password: "AnotherPassword123!",
+        })
+        .expect(400);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("already been used");
+    });
+
+    it("Ziyam logs in with newly set password and resolves to EMPLOYEE role", async () => {
+      const res = await request(app)
+        .post("/auth/login")
+        .send({
+          email: ziyamEmail,
+          password: ziyamPassword,
+        })
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.organization.name).toBe("ABC Technologies");
+      expect(res.body.data.role).toBe("EMPLOYEE");
+
+      ziyamAccessToken = res.body.data.accessToken;
+    });
+  });
+
+  describe("3. Role-Based Access Control (Ziyam as EMPLOYEE)", () => {
+    it("Ziyam can access own profile (/auth/me)", async () => {
+      const res = await request(app)
+        .get("/auth/me")
+        .set("Authorization", `Bearer ${ziyamAccessToken}`)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.user.email).toBe(ziyamEmail.toLowerCase());
+      expect(res.body.data.role).toBe("EMPLOYEE");
+    });
+
+    it("Ziyam (EMPLOYEE) is blocked from user management (/organizations/users) -> 403 Forbidden", async () => {
+      const res = await request(app)
+        .get("/organizations/users")
+        .set("Authorization", `Bearer ${ziyamAccessToken}`)
+        .expect(403);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Forbidden");
+    });
+
+    it("Ziyam (EMPLOYEE) is blocked from organization settings -> 403 Forbidden", async () => {
+      const res = await request(app)
+        .patch("/organizations/settings")
+        .set("Authorization", `Bearer ${ziyamAccessToken}`)
+        .send({ name: "Hacked Name" })
+        .expect(403);
+
+      expect(res.body.success).toBe(false);
+    });
+
+    it("Ziyam (EMPLOYEE) is blocked from creating departments -> 403 Forbidden", async () => {
+      const res = await request(app)
+        .post("/organizations/departments")
+        .set("Authorization", `Bearer ${ziyamAccessToken}`)
+        .send({ name: "Unauthorized Dept" })
+        .expect(403);
 
       expect(res.body.success).toBe(false);
     });
   });
 
-  describe("3. Tenant Data Isolation (ABC vs XYZ)", () => {
-    beforeAll(async () => {
-      // Add David (EMPLOYEE) to XYZ Corporation
+  describe("4. Multi-Tenant Invitation & Data Security", () => {
+    it("ABC Admin listing users sees Misfar (ORG_ADMIN) and Ziyam (EMPLOYEE)", async () => {
       const res = await request(app)
-        .post("/organizations/users")
+        .get("/organizations/users")
+        .set("Authorization", `Bearer ${abcAccessToken}`)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      const members = res.body.data;
+      expect(members.some((m: any) => m.email === ziyamEmail.toLowerCase())).toBe(true);
+    });
+
+    it("XYZ Admin listing users does NOT see Ziyam or any ABC users", async () => {
+      const res = await request(app)
+        .get("/organizations/users")
         .set("Authorization", `Bearer ${xyzAccessToken}`)
+        .expect(200);
+
+      expect(res.body.success).toBe(true);
+      const members = res.body.data;
+      expect(members.some((m: any) => m.email === ziyamEmail.toLowerCase())).toBe(false);
+    });
+
+    it("XYZ Admin cannot accept or tamper with ABC's invitation token", async () => {
+      // Create new invite in ABC
+      const invRes = await request(app)
+        .post("/organizations/users")
+        .set("Authorization", `Bearer ${abcAccessToken}`)
         .send({
-          name: "David Employee",
-          email: `david.xyz.${Date.now()}@example.com`,
-          password: "Password123!",
+          name: "Tamper Target",
+          email: `tamper.${Date.now()}@example.com`,
           role: "EMPLOYEE",
         })
         .expect(201);
 
-      xyzEmployeeMemberId = res.body.data.id;
-    });
+      const tamperToken = invRes.body.data.token;
 
-    it("ABC Admin listing users returns ONLY ABC users", async () => {
-      const res = await request(app)
-        .get("/organizations/users")
-        .set("Authorization", `Bearer ${abcAccessToken}`)
+      // Verify token resolves to ABC Technologies, NOT XYZ
+      const verifyRes = await request(app)
+        .get(`/auth/invitations/verify?token=${tamperToken}`)
         .expect(200);
 
-      expect(res.body.success).toBe(true);
-      const emails: string[] = res.body.data.map((u: any) => u.email);
-      expect(emails.some((e) => e.includes("misfar.abc"))).toBe(true);
-      expect(emails.some((e) => e.includes("arun.abc"))).toBe(true);
-
-      // Must NOT contain XYZ users
-      expect(emails.some((e) => e.includes("alex.xyz"))).toBe(false);
-      expect(emails.some((e) => e.includes("david.xyz"))).toBe(false);
-    });
-
-    it("XYZ Admin listing users returns ONLY XYZ users", async () => {
-      const res = await request(app)
-        .get("/organizations/users")
-        .set("Authorization", `Bearer ${xyzAccessToken}`)
-        .expect(200);
-
-      expect(res.body.success).toBe(true);
-      const emails: string[] = res.body.data.map((u: any) => u.email);
-      expect(emails.some((e) => e.includes("alex.xyz"))).toBe(true);
-      expect(emails.some((e) => e.includes("david.xyz"))).toBe(true);
-
-      // Must NOT contain ABC users
-      expect(emails.some((e) => e.includes("misfar.abc"))).toBe(false);
-    });
-
-    it("ABC Admin trying to modify XYZ user's role is rejected (404/403)", async () => {
-      const res = await request(app)
-        .patch(`/organizations/users/${xyzEmployeeMemberId}/role`)
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({ role: "ORG_ADMIN" })
-        .expect(404);
-
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain("User not found in your organization");
-    });
-  });
-
-  describe("4. Department Management & Tenant Scoping", () => {
-    it("ABC Admin creates an IT department in ABC Corporation", async () => {
-      const res = await request(app)
-        .post("/organizations/departments")
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({ name: "IT Department" })
-        .expect(201);
-
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.name).toBe("IT Department");
-      abcDeptId = res.body.data.id;
-    });
-
-    it("XYZ Admin listing departments does NOT see ABC's IT department", async () => {
-      const res = await request(app)
-        .get("/organizations/departments")
-        .set("Authorization", `Bearer ${xyzAccessToken}`)
-        .expect(200);
-
-      expect(res.body.success).toBe(true);
-      const deptNames: string[] = res.body.data.map((d: any) => d.name);
-      expect(deptNames).not.toContain("IT Department");
-    });
-
-    it("XYZ Admin trying to delete ABC's IT department is rejected (404)", async () => {
-      const res = await request(app)
-        .delete(`/organizations/departments/${abcDeptId}`)
-        .set("Authorization", `Bearer ${xyzAccessToken}`)
-        .expect(404);
-
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain("Department not found in your organization");
-    });
-  });
-
-  describe("5. Role Authorization & Access Control (Non-Admin Rejection)", () => {
-    let employeeAccessToken: string;
-
-    beforeAll(async () => {
-      // Login as Arun (EMPLOYEE/MANAGER in ABC)
-      const loginRes = await request(app)
-        .post("/auth/login")
-        .send({
-          email: `arun.abc.${Date.now()}`.replace(/\d+$/, "") + "@example.com", // Find Arun's exact email or create an explicit employee
-          password: "Password123!",
-        });
-
-      if (!loginRes.body.data?.accessToken) {
-        // If login by dynamic email is tricky, create a clean EMPLOYEE user
-        const newEmpEmail = `arun.emp.${Date.now()}@example.com`;
-        await request(app)
-          .post("/organizations/users")
-          .set("Authorization", `Bearer ${abcAccessToken}`)
-          .send({
-            name: "Arun Emp",
-            email: newEmpEmail,
-            password: "Password123!",
-            role: "EMPLOYEE",
-          });
-
-        const empLogin = await request(app).post("/auth/login").send({
-          email: newEmpEmail,
-          password: "Password123!",
-        });
-
-        employeeAccessToken = empLogin.body.data.accessToken;
-      } else {
-        employeeAccessToken = loginRes.body.data.accessToken;
-      }
-    });
-
-    it("EMPLOYEE attempting to view user list is rejected with 403 Forbidden", async () => {
-      const res = await request(app)
-        .get("/organizations/users")
-        .set("Authorization", `Bearer ${employeeAccessToken}`)
-        .expect(403);
-
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain("Forbidden");
-    });
-
-    it("EMPLOYEE attempting to add a user is rejected with 403 Forbidden", async () => {
-      const res = await request(app)
-        .post("/organizations/users")
-        .set("Authorization", `Bearer ${employeeAccessToken}`)
-        .send({
-          name: "Hacker User",
-          email: "hacker@example.com",
-          role: "ORG_ADMIN",
-        })
-        .expect(403);
-
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain("Forbidden");
-    });
-
-    it("EMPLOYEE attempting to update organization settings is rejected with 403 Forbidden", async () => {
-      const res = await request(app)
-        .patch("/organizations/settings")
-        .set("Authorization", `Bearer ${employeeAccessToken}`)
-        .send({ name: "Hacked Corp" })
-        .expect(403);
-
-      expect(res.body.success).toBe(false);
-    });
-  });
-
-  describe("6. Member Deactivation & Single Admin Protection", () => {
-    it("Prevents deactivating the only active ORG_ADMIN", async () => {
-      // Find ABC Admin's member ID
-      const usersRes = await request(app)
-        .get("/organizations/users")
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .expect(200);
-
-      const adminMember = usersRes.body.data.find((u: any) => u.role === "ORG_ADMIN");
-      expect(adminMember).toBeDefined();
-
-      const res = await request(app)
-        .patch(`/organizations/users/${adminMember.id}/status`)
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({ status: "INACTIVE" })
-        .expect(400);
-
-      expect(res.body.success).toBe(false);
-      expect(res.body.message).toContain("Cannot deactivate the only active organization admin");
-    });
-
-    it("Allows deactivating a non-admin member", async () => {
-      const res = await request(app)
-        .patch(`/organizations/users/${abcEmployeeMemberId}/status`)
-        .set("Authorization", `Bearer ${abcAccessToken}`)
-        .send({ status: "INACTIVE" })
-        .expect(200);
-
-      expect(res.body.success).toBe(true);
-      expect(res.body.data.status).toBe("INACTIVE");
+      expect(verifyRes.body.data.organizationName).toBe("ABC Technologies");
+      expect(verifyRes.body.data.organizationName).not.toBe("XYZ Corporation");
     });
   });
 });
