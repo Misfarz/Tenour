@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { LogOut, Building2, ShieldCheck, User as UserIcon, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { LogOut, Building2, ShieldCheck, User as UserIcon, Loader2, Sparkles, Users, FolderGit2, Settings } from "lucide-react";
 import Link from "next/link";
 
 export default function BuyerDashboardPage() {
@@ -42,7 +42,7 @@ export default function BuyerDashboardPage() {
       {/* Header / Navbar */}
       <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-8 h-8 rounded-md bg-slate-950 flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
                 N
@@ -51,10 +51,22 @@ export default function BuyerDashboardPage() {
                 Tenour
               </span>
             </Link>
+            <span className="text-slate-300">|</span>
             <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-[#EDF5FF] text-[#1D72C9] border border-[#D0E4FF]">
               Buyer Workspace
             </span>
           </div>
+
+          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
+            <Link href="/buyer/dashboard" className="text-[#2383E2] font-semibold">Dashboard</Link>
+            {role === "ORG_ADMIN" && (
+              <Link href="/buyer/users" className="hover:text-slate-950 transition">User Management</Link>
+            )}
+            <Link href="/buyer/departments" className="hover:text-slate-950 transition">Departments</Link>
+            {role === "ORG_ADMIN" && (
+              <Link href="/buyer/settings" className="hover:text-slate-950 transition">Organization Settings</Link>
+            )}
+          </nav>
 
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full text-slate-700 font-medium">
@@ -80,17 +92,70 @@ export default function BuyerDashboardPage() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDF5FF] border border-[#D0E4FF] text-[#1D72C9] text-xs font-semibold mb-3">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Buyer Account Active</span>
+                <span>Multi-Tenancy & RBAC Active (Day 3)</span>
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
                 Welcome, {user.name}
               </h1>
               <p className="text-slate-600 text-sm mt-2 max-w-xl">
-                Your buyer session is authenticated with JWT & argon2 password security.
+                Your account is active in <span className="font-bold text-slate-900">{organization?.name}</span> with role <span className="font-bold text-[#2383E2]">{displayRole}</span>.
               </p>
             </div>
           </div>
         </div>
+
+        {/* Quick Admin Actions (If ORG_ADMIN) */}
+        {role === "ORG_ADMIN" && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Link
+              href="/buyer/users"
+              className="bg-white border border-slate-200 hover:border-[#2383E2] p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EDF5FF] flex items-center justify-center text-[#2383E2]">
+                  <Users className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-950 group-hover:text-[#2383E2] transition">User Management</h3>
+                  <p className="text-xs text-slate-500">Manage members & roles</p>
+                </div>
+              </div>
+              <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+
+            <Link
+              href="/buyer/departments"
+              className="bg-white border border-slate-200 hover:border-[#2383E2] p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EDF5FF] flex items-center justify-center text-[#2383E2]">
+                  <FolderGit2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-950 group-hover:text-[#2383E2] transition">Departments</h3>
+                  <p className="text-xs text-slate-500">Configure team units</p>
+                </div>
+              </div>
+              <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+
+            <Link
+              href="/buyer/settings"
+              className="bg-white border border-slate-200 hover:border-[#2383E2] p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#EDF5FF] flex items-center justify-center text-[#2383E2]">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-950 group-hover:text-[#2383E2] transition">Organization Settings</h3>
+                  <p className="text-xs text-slate-500">Update company details</p>
+                </div>
+              </div>
+              <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          </div>
+        )}
 
         {/* Current User & Organization Details Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -124,7 +189,7 @@ export default function BuyerDashboardPage() {
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
-                Role
+                Role & RBAC
               </span>
             </div>
             <div>
@@ -133,7 +198,9 @@ export default function BuyerDashboardPage() {
                 {displayRole}
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Organization Administrative Privileges
+                {displayRole === "ORG_ADMIN"
+                  ? "Full Organization Administration Privileges"
+                  : `${displayRole} Member Access`}
               </p>
             </div>
           </div>
