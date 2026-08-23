@@ -5,7 +5,7 @@ import Link from "next/link";
 import { LogOut, User as UserIcon, Mail, ShieldCheck, Sparkles, Loader2, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
-  const { user, isLoading, isAuthenticated, logout } = useAuth();
+  const { user, organization, isLoading, isAuthenticated, logout } = useAuth();
 
   if (isLoading) {
     return (
@@ -87,17 +87,26 @@ export default function HomePage() {
         {/* Welcome Banner */}
         <div className="relative overflow-hidden p-8 rounded-3xl bg-gradient-to-r from-indigo-900/40 via-purple-900/20 to-neutral-900/80 border border-indigo-500/20 shadow-2xl">
           <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-          
+
           <div className="relative z-10 max-w-2xl">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-4">
               <Sparkles className="w-3.5 h-3.5" /> Welcome back
             </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Hello, {user.firstName} {user.lastName || ""}!
+              Hello, {user.name}!
             </h2>
             <p className="text-neutral-400 text-sm mt-2 leading-relaxed">
-              You are signed in to your Tenour account. Everything is setup and operating smoothly.
+              You are signed in to your Tenour account.
             </p>
+            <div className="mt-6">
+              <Link
+                href={organization ? "/dashboard" : "/org-setup"}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm shadow-lg shadow-indigo-500/25 transition"
+              >
+                <span>{organization ? "Go to Dashboard" : "Set up Organization"}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -123,9 +132,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center justify-between py-2 border-b border-neutral-800/60">
                 <span className="text-neutral-500 text-xs">Full Name</span>
-                <span className="text-neutral-200 font-medium">
-                  {user.firstName} {user.lastName || ""}
-                </span>
+                <span className="text-neutral-200 font-medium">{user.name}</span>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span className="text-neutral-500 text-xs">Email</span>
@@ -149,7 +156,7 @@ export default function HomePage() {
                 </span>
               </div>
               <p className="text-xs text-neutral-400 leading-relaxed mb-4">
-                Your session is secured using HttpOnly cookies and Argon2 password encryption.
+                Your session is secured using HttpOnly cookies and password encryption.
               </p>
             </div>
 

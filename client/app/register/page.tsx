@@ -6,14 +6,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/context/auth-context";
-import { User, Mail, Lock, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { User as UserIcon, Mail, Lock, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
-const registerSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().optional(),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(1, "Full name is required"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+    confirmPassword: z.string().min(1, "Confirm password is required"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -34,7 +39,11 @@ export default function RegisterPage() {
     setError(null);
     setIsLoading(true);
     try {
-      await registerUser(data);
+      await registerUser({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
@@ -46,7 +55,7 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-neutral-950 to-neutral-950">
       {/* Background ambient lighting */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-xl rounded-2xl p-8 shadow-2xl shadow-indigo-950/20">
           <div className="text-center mb-8">
@@ -67,36 +76,22 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                  First Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
-                  <input
-                    {...register("firstName")}
-                    type="text"
-                    placeholder="John"
-                    className="w-full pl-9 pr-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-xl text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
-                  />
-                </div>
-                {errors.firstName && (
-                  <p className="text-xs text-red-400 mt-1">{errors.firstName.message}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-neutral-300 mb-1.5">
-                  Last Name
-                </label>
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Full Name
+              </label>
+              <div className="relative">
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
                 <input
-                  {...register("lastName")}
+                  {...register("name")}
                   type="text"
-                  placeholder="Doe"
-                  className="w-full px-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-xl text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                  placeholder="Misfar"
+                  className="w-full pl-9 pr-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-xl text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
                 />
               </div>
+              {errors.name && (
+                <p className="text-xs text-red-400 mt-1">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
@@ -108,7 +103,7 @@ export default function RegisterPage() {
                 <input
                   {...register("email")}
                   type="email"
-                  placeholder="john@example.com"
+                  placeholder="misfar@example.com"
                   className="w-full pl-9 pr-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-xl text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
                 />
               </div>
@@ -132,6 +127,24 @@ export default function RegisterPage() {
               </div>
               {errors.password && (
                 <p className="text-xs text-red-400 mt-1">{errors.password.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-neutral-300 mb-1.5">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500" />
+                <input
+                  {...register("confirmPassword")}
+                  type="password"
+                  placeholder="••••••••"
+                  className="w-full pl-9 pr-3 py-2.5 bg-neutral-950/80 border border-neutral-800 rounded-xl text-sm text-neutral-100 placeholder:text-neutral-600 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                />
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-xs text-red-400 mt-1">{errors.confirmPassword.message}</p>
               )}
             </div>
 

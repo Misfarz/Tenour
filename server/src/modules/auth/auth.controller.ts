@@ -34,15 +34,14 @@ export class AuthController {
       res.status(201).json({
         success: true,
         message: "Registration successful",
-        data: {
-          user: result.user,
-          accessToken: result.accessToken,
-        },
+        data: result,
       });
     } catch (error: any) {
-      res.status(400).json({
+      const message = error.message || "Registration failed";
+      const statusCode = message === "Email already exists" ? 400 : 400;
+      res.status(statusCode).json({
         success: false,
-        message: error.message || "Registration failed",
+        message,
       });
     }
   }
@@ -70,15 +69,48 @@ export class AuthController {
       res.status(200).json({
         success: true,
         message: "Login successful",
-        data: {
-          user: result.user,
-          accessToken: result.accessToken,
-        },
+        data: result,
       });
     } catch (error: any) {
       res.status(401).json({
         success: false,
         message: error.message || "Invalid credentials",
+      });
+    }
+  }
+
+  static async refresh(req: Request, res: Response): Promise<void> {
+    try {
+      const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
+
+      if (!refreshToken) {
+        res.status(401).json({
+          success: false,
+          message: "Missing authentication",
+        });
+        return;
+      }
+
+      const result = await AuthService.refreshToken(refreshToken);
+
+      res.cookie("refreshToken", result.refreshToken, COOKIE_OPTIONS);
+      res.cookie("accessToken", result.accessToken, {
+        ...COOKIE_OPTIONS,
+        maxAge: 15 * 60 * 1000, // 15 mins
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Tokens refreshed successfully",
+        data: {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        },
+      });
+    } catch (error: any) {
+      res.status(401).json({
+        success: false,
+        message: error.message || "Invalid token",
       });
     }
   }
@@ -94,16 +126,16 @@ export class AuthController {
 
   static async me(req: AuthenticatedRequest, res: Response): Promise<void> {
     try {
-      if (!req.user) {
-        res.status(401).json({ success: false, message: "Not authenticated" });
+      if (!req.user?.userId) {
+        res.status(401).json({ success: false, message: "Missing authentication" });
         return;
       }
 
-      const user = await AuthService.getUserById(req.user.userId);
+      const data = await AuthService.getUserById(req.user.userId);
 
       res.status(200).json({
         success: true,
-        data: { user },
+        data,
       });
     } catch (error: any) {
       res.status(404).json({

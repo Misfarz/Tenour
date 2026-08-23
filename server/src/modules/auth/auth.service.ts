@@ -1,26 +1,27 @@
 import { prisma } from "../../infrastructure/database/prisma/prisma.client";
 import { RegisterInput, LoginInput } from "./auth.schemas";
 import { hashPassword, verifyPassword } from "../../shared/utils/password.utils";
-import { generateAccessToken, generateRefreshToken } from "../../shared/utils/jwt.utils";
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../shared/utils/jwt.utils";
 
 export class AuthService {
   static async register(input: RegisterInput) {
+    const emailNormalized = input.email.toLowerCase().trim();
+
     const existingUser = await prisma.user.findUnique({
-      where: { email: input.email.toLowerCase() },
+      where: { email: emailNormalized },
     });
 
     if (existingUser) {
-      throw new Error("User with this email already exists");
+      throw new Error("Email already exists");
     }
 
     const hashedPassword = await hashPassword(input.password);
 
     const user = await prisma.user.create({
       data: {
-        email: input.email.toLowerCase(),
+        email: emailNormalized,
         password: hashedPassword,
-        firstName: input.firstName,
-        lastName: input.lastName || null,
+        name: input.name.trim(),
       },
     });
 
@@ -28,18 +29,34 @@ export class AuthService {
     const accessToken = generateAccessToken(tokenPayload);
     const refreshToken = generateRefreshToken(tokenPayload);
 
-    const { password: _, ...userWithoutPassword } = user;
-
     return {
-      user: userWithoutPassword,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+      organization: null,
+      role: null,
+      memberships: [],
       accessToken,
       refreshToken,
     };
   }
 
   static async login(input: LoginInput) {
+    const emailNormalized = input.email.toLowerCase().trim();
+
     const user = await prisma.user.findUnique({
-      where: { email: input.email.toLowerCase() },
+      where: { email: emailNormalized },
+      include: {
+        memberships: {
+          include: {
+            organization: true,
+            role: true,
+            department: true,
+          },
+        },
+      },
     });
 
     if (!user) {
@@ -47,7 +64,6 @@ export class AuthService {
     }
 
     const isPasswordValid = await verifyPassword(user.password, input.password);
-
     if (!isPasswordValid) {
       throw new Error("Invalid email or password");
     }
@@ -56,25 +72,90 @@ export class AuthService {
     const accessToken = generateAccessToken(tokenPayload);
     const refreshToken = generateRefreshToken(tokenPayload);
 
-    const { password: _, ...userWithoutPassword } = user;
+    const primaryMembership = user.memberships[0];
 
     return {
-      user: userWithoutPassword,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+      organization: primaryMembership?.organization
+        ? {
+            id: primaryMembership.organization.id,
+            name: primaryMembership.organization.name,
+            slug: primaryMembership.organization.slug,
+          }
+        : null,
+      role: primaryMembership?.role ? primaryMembership.role.name : null,
+      memberships: user.memberships,
       accessToken,
       refreshToken,
     };
   }
 
+  static async refreshToken(token: string) {
+    try {
+      const payload = verifyRefreshToken(token);
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      const tokenPayload = { userId: user.id, email: user.email };
+      const newAccessToken = generateAccessToken(tokenPayload);
+      const newRefreshToken = generateRefreshToken(tokenPayload);
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      };
+    } catch (error: any) {
+      if (error.message === "User not found") {
+        throw error;
+      }
+      throw new Error("Invalid or expired token");
+    }
+  }
+
   static async getUserById(userId: string) {
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        memberships: {
+          include: {
+            organization: true,
+            role: true,
+            department: true,
+          },
+        },
+      },
     });
 
     if (!user) {
       throw new Error("User not found");
     }
 
-    const { password: _, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    const primaryMembership = user.memberships[0];
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      },
+      organization: primaryMembership?.organization
+        ? {
+            id: primaryMembership.organization.id,
+            name: primaryMembership.organization.name,
+            slug: primaryMembership.organization.slug,
+          }
+        : null,
+      role: primaryMembership?.role ? primaryMembership.role.name : null,
+      memberships: user.memberships,
+    };
   }
 }
