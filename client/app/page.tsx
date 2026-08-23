@@ -15,351 +15,384 @@ import {
   LogOut,
   Loader2,
   ChevronRight,
-  ExternalLink,
-  ChevronDown,
+  Search,
+  User as UserIcon,
+  HelpCircle,
+  Truck,
+  RotateCcw,
 } from "lucide-react";
 
 export default function HomePage() {
   const { user, organization, isLoading, isAuthenticated, logout } = useAuth();
+  const [portalCategory, setPortalCategory] = useState<"all" | "buyer" | "vendor">("all");
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white text-slate-600">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-[#2383E2] animate-spin" />
-          <p className="text-sm font-medium text-slate-500">Loading Tenour Platform...</p>
+          <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">Loading Tenour Cloud...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
-      {/* Top Notion-Style Navigation Bar */}
-      <header className="border-b border-slate-100 bg-white/90 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-10">
-            {/* Notion style minimalist brand logo */}
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-md bg-slate-950 flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
-                N
-              </div>
-              <span className="font-extrabold text-xl text-slate-950 tracking-tight">
-                Tenour
-              </span>
-            </Link>
+    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans tracking-tight selection:bg-slate-950 selection:text-white">
+      {/* Top Minimal Announcement Bar */}
+      <div className="bg-slate-950 text-white text-[11px] font-medium tracking-wide py-2 px-6">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <span className="flex items-center gap-1.5 hover:text-slate-300 transition cursor-pointer">
+              <Truck className="w-3.5 h-3.5" /> Fast Multi-Tenant Setup
+            </span>
+            <span className="hidden md:flex items-center gap-1.5 hover:text-slate-300 transition cursor-pointer">
+              <RotateCcw className="w-3.5 h-3.5" /> 100% Data Isolation
+            </span>
+          </div>
+          <div className="flex items-center gap-6 text-slate-300">
+            <span className="hover:text-white transition cursor-pointer">Documentation</span>
+            <span className="hover:text-white transition cursor-pointer">API Status</span>
+            <span className="flex items-center gap-1 hover:text-white transition cursor-pointer">
+              <HelpCircle className="w-3.5 h-3.5" /> Support
+            </span>
+          </div>
+        </div>
+      </div>
 
-            {/* Notion style dropdown links */}
-            <nav className="hidden lg:flex items-center gap-7 text-sm font-medium text-slate-600">
-              <div className="flex items-center gap-1 hover:text-slate-950 transition cursor-pointer">
-                <span>Product</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </div>
-              <div className="flex items-center gap-1 hover:text-slate-950 transition cursor-pointer">
-                <span>Solutions</span>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-              </div>
-              <a href="#portals" className="hover:text-slate-950 transition">
-                Portals
-              </a>
-              <a href="#features" className="hover:text-slate-950 transition">
-                Enterprise
-              </a>
-              <a href="#pricing" className="hover:text-slate-950 transition">
-                Pricing
-              </a>
-            </nav>
+      {/* Main Clean Header */}
+      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded bg-slate-950 flex items-center justify-center text-white font-extrabold text-lg tracking-tighter">
+              T
+            </div>
+            <span className="font-extrabold text-2xl tracking-tighter text-slate-950 uppercase">
+              TENOUR
+            </span>
+          </Link>
+
+          {/* Search Input Bar (Matching Max Fashion screenshot) */}
+          <div className="hidden md:flex flex-1 max-w-lg relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="What are you looking for? (e.g. Buyer Portal, RFQs, Organizations)"
+              className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-md text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-900 transition"
+            />
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* User / Auth Actions */}
+          <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-wider">
             {isAuthenticated && user ? (
               <div className="flex items-center gap-3">
+                <span className="hidden lg:inline text-slate-500 font-normal lowercase tracking-normal">
+                  {user.email}
+                </span>
                 <Link
                   href={organization ? "/buyer/dashboard" : "/buyer/setup-organization"}
-                  className="px-4 py-2 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5"
+                  className="px-4 py-2.5 rounded bg-slate-950 hover:bg-slate-800 text-white transition flex items-center gap-1.5"
                 >
-                  <span>Go to Dashboard</span>
+                  <span>Dashboard</span>
                   <ChevronRight className="w-3.5 h-3.5" />
                 </Link>
                 <button
                   onClick={logout}
-                  className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-2.5 rounded border border-slate-300 hover:bg-slate-100 text-slate-700 transition cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Logout</span>
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-3">
                 <Link
                   href="/buyer/login"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-950 transition px-2 py-1"
+                  className="px-4 py-2.5 border border-slate-300 hover:border-slate-950 text-slate-900 rounded transition"
                 >
-                  Log in
+                  SIGN IN
                 </Link>
                 <Link
                   href="/buyer/register"
-                  className="px-4 py-2 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white text-xs font-semibold shadow-sm transition flex items-center gap-1.5"
+                  className="px-5 py-2.5 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded transition"
                 >
-                  <span>Get Tenour free</span>
+                  REGISTER
                 </Link>
               </div>
             )}
           </div>
         </div>
+
+        {/* Minimal Category Sub-nav */}
+        <div className="border-t border-slate-100 bg-white">
+          <div className="max-w-7xl mx-auto px-6 flex items-center justify-center md:justify-start gap-8 h-12 text-xs font-medium text-slate-700 tracking-wide">
+            <a href="#portals" className="hover:text-slate-950 transition font-semibold">
+              BUYER PORTAL
+            </a>
+            <a href="#portals" className="hover:text-slate-950 transition font-semibold">
+              VENDOR NETWORK
+            </a>
+            <a href="#features" className="hover:text-slate-950 transition">
+              ORGANIZATION SETUP
+            </a>
+            <a href="#features" className="hover:text-slate-950 transition">
+              RBAC ROLES
+            </a>
+            <a href="#features" className="hover:text-slate-950 transition">
+              PRISMA SCHEMA
+            </a>
+          </div>
+        </div>
       </header>
 
-      {/* Logged in notification bar */}
+      {/* Logged in Notice Banner */}
       {isAuthenticated && user && (
-        <div className="bg-[#EDF5FF] border-b border-[#D0E4FF] py-2 px-4 text-center text-xs text-[#1D72C9]">
-          <span className="font-semibold">Active Session: {user.name} ({user.email})</span> — Organization:{" "}
+        <div className="bg-[#EDF5FF] border-b border-[#C6E0FF] py-2 px-6 text-center text-xs font-medium text-[#1D72C9]">
+          Active Account: <span className="font-bold text-slate-900">{user.name} ({user.email})</span> — Organization:{" "}
           <span className="font-bold text-slate-900">{organization?.name || "Not configured"}</span>.{" "}
-          <Link href="/buyer/dashboard" className="underline font-bold ml-1 text-[#2383E2] hover:text-[#1D72C9]">
+          <Link href="/buyer/dashboard" className="underline font-bold text-[#2383E2] hover:text-[#1D72C9] ml-1">
             Open Dashboard →
           </Link>
         </div>
       )}
 
-      {/* Notion-Style Hero Section */}
-      <section className="pt-20 pb-16 px-4 sm:px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
-        {/* Main Headline with highlighted text pill */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-slate-950 tracking-tight leading-[1.08] max-w-4xl">
-          Where teams and <br />
-          suppliers{" "}
-          <span className="inline-flex items-center gap-2 px-5 py-1 rounded-full bg-[#FFEDD5] text-slate-950 font-bold border border-[#FDBA74]">
-            <span className="w-3 h-3 rounded-full bg-[#EA580C]" />
-            Procure
-          </span>{" "}
-          together.
+      {/* Hero Section with Minimalist Clean Typography */}
+      <section className="py-16 px-6 max-w-6xl mx-auto text-center flex flex-col items-center">
+        <span className="text-[11px] font-bold uppercase tracking-widest px-3 py-1 bg-slate-100 text-slate-700 rounded mb-4">
+          SAAS PROCUREMENT PLATFORM
+        </span>
+
+        {/* Main Minimalist Headline */}
+        <h1 className="text-4xl sm:text-6xl font-extrabold text-slate-950 tracking-tight leading-tight max-w-4xl">
+          Modern Procurement for Buyers and Suppliers.
         </h1>
 
-        {/* Subtitle */}
-        <p className="mt-6 text-base sm:text-xl text-slate-600 max-w-2xl font-normal leading-relaxed">
-          Capture context, manage purchase requests, and automate vendor quotations with software built for your team.
+        <p className="mt-4 text-base sm:text-lg text-slate-600 max-w-2xl font-normal leading-relaxed">
+          Manage purchase requests, organization permissions, and supplier quotation workflows in a unified clean workspace.
         </p>
 
-        {/* Action Buttons (Notion style: Primary Blue + Soft Light Blue) */}
-        <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/buyer/register"
-            className="px-6 py-3.5 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-sm shadow-md shadow-[#2383E2]/20 transition"
+        {/* Minimal Category Pills Filter (Matching screenshot 'Shop For: Women | Kids | Men') */}
+        <div className="mt-8 flex items-center justify-center gap-3">
+          <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 mr-1">
+            Filter Portals:
+          </span>
+          <button
+            onClick={() => setPortalCategory("all")}
+            className={`px-4 py-1.5 rounded text-xs font-semibold tracking-wide transition cursor-pointer ${
+              portalCategory === "all"
+                ? "bg-slate-950 text-white"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+            }`}
           >
-            Get Tenour free
-          </Link>
-          <a
-            href="#portals"
-            className="px-6 py-3.5 rounded-lg bg-[#EDF5FF] hover:bg-[#E0F2FE] text-[#1D72C9] font-medium text-sm transition"
+            ALL
+          </button>
+          <button
+            onClick={() => setPortalCategory("buyer")}
+            className={`px-4 py-1.5 rounded text-xs font-semibold tracking-wide transition cursor-pointer ${
+              portalCategory === "buyer"
+                ? "bg-slate-950 text-white"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+            }`}
           >
-            Request a demo
-          </a>
-        </div>
-
-        {/* Social Proof Logos Bar (Exactly matching Notion hero bottom) */}
-        <div className="mt-16 pt-8 border-t border-slate-100 w-full max-w-4xl">
-          <p className="text-xs font-medium uppercase tracking-widest text-slate-400 mb-6">
-            TRUSTED BY FORWARD-THINKING PROCUREMENT TEAMS
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 opacity-60 grayscale hover:grayscale-0 transition-all font-bold text-slate-800 text-sm tracking-tight">
-            <span>OpenAI</span>
-            <span>Figma</span>
-            <span>ramp ⚡</span>
-            <span>CURSOR</span>
-            <span>▲ Vercel</span>
-            <span>NVIDIA</span>
-            <span>VOLVO</span>
-            <span>L'ORÉAL</span>
-            <span>Discord</span>
-          </div>
+            BUYER PORTAL
+          </button>
+          <button
+            onClick={() => setPortalCategory("vendor")}
+            className={`px-4 py-1.5 rounded text-xs font-semibold tracking-wide transition cursor-pointer ${
+              portalCategory === "vendor"
+                ? "bg-slate-950 text-white"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+            }`}
+          >
+            VENDOR NETWORK
+          </button>
         </div>
       </section>
 
-      {/* Access Portals Section (Buyer & Vendor Login UI) */}
-      <section id="portals" className="py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <span className="px-3 py-1 rounded-full bg-[#EDF5FF] text-[#1D72C9] text-xs font-semibold mb-3 inline-block">
-            Portal Gateway
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-950 tracking-tight">
-            Select Your Access Portal
-          </h2>
-          <p className="text-slate-600 text-sm mt-2 max-w-xl mx-auto">
-            Choose your login destination for buyers or vendor suppliers.
-          </p>
-        </div>
-
-        {/* Dual Portal Cards */}
+      {/* Portals Grid Section (Max Fashion / Minimal E-Commerce Product Card Aesthetic) */}
+      <section id="portals" className="pb-20 px-6 max-w-6xl mx-auto w-full">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {/* Buyer Portal Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-[#2383E2]/50 transition-all flex flex-col justify-between group">
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 rounded-xl bg-[#EDF5FF] flex items-center justify-center text-[#2383E2]">
-                  <Building2 className="w-6 h-6" />
+          {(portalCategory === "all" || portalCategory === "buyer") && (
+            <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="px-2 py-0.5 bg-slate-950 text-white text-[10px] font-bold uppercase tracking-wider rounded">
+                    ACTIVE
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">ORG_ADMIN</span>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+
+                <div className="w-10 h-10 rounded bg-[#EDF5FF] flex items-center justify-center text-[#2383E2] mb-4">
+                  <Building2 className="w-5 h-5" />
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-950 tracking-tight mb-2">
                   Buyer Workspace
-                </span>
-              </div>
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed mb-6 font-normal">
+                  Corporate buyer workspace to create organizations, manage member roles, issue purchase requests, and handle multi-tenant isolation.
+                </p>
 
-              <h3 className="text-2xl font-bold text-slate-950 tracking-tight mb-2">
-                Buyer Portal
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                For corporate buyers, department heads, and procurement admins to manage purchase requests, approval pipelines, and multi-tenant setup.
-              </p>
-
-              <div className="space-y-3 mb-8 text-xs text-slate-700 font-medium">
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#2383E2]" />
-                  <span>Organization Setup & ORG_ADMIN Management</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#2383E2]" />
-                  <span>Purchase Requests & Multi-Tenant Isolation</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#2383E2]" />
-                  <span>JWT Session & Cookie Authentication</span>
+                <div className="space-y-2 border-t border-slate-100 pt-4 mb-6 text-xs text-slate-700 font-medium">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Role Created</span>
+                    <span className="font-semibold text-slate-900">ORG_ADMIN</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Isolation Mode</span>
+                    <span className="font-semibold text-slate-900">Multi-Tenant</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Security</span>
+                    <span className="font-semibold text-slate-900">JWT + Cookie</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/buyer/login"
-                className="flex-1 py-3 px-4 bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-2"
-              >
-                <span>Buyer Login</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/buyer/register"
-                className="flex-1 py-3 px-4 bg-[#EDF5FF] hover:bg-[#E0F2FE] text-[#1D72C9] font-medium text-xs rounded-lg transition flex items-center justify-center"
-              >
-                Create Buyer Account
-              </Link>
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                <Link
+                  href="/buyer/login"
+                  className="flex-1 py-2.5 px-4 bg-slate-950 hover:bg-slate-800 text-white text-xs font-semibold uppercase tracking-wider rounded text-center transition"
+                >
+                  BUYER LOGIN
+                </Link>
+                <Link
+                  href="/buyer/register"
+                  className="flex-1 py-2.5 px-4 bg-[#EDF5FF] hover:bg-[#E0F2FE] text-[#1D72C9] text-xs font-semibold uppercase tracking-wider rounded text-center transition"
+                >
+                  REGISTER
+                </Link>
+              </div>
             </div>
+          )}
+
+          {/* Vendor Portal Card (UI Preview) */}
+          {(portalCategory === "all" || portalCategory === "vendor") && (
+            <div className="bg-slate-50 border border-slate-200 rounded-lg p-6 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between group">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="px-2 py-0.5 bg-slate-200 text-slate-700 text-[10px] font-bold uppercase tracking-wider rounded">
+                    PREVIEW
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">SUPPLIER</span>
+                </div>
+
+                <div className="w-10 h-10 rounded bg-sky-100 flex items-center justify-center text-sky-600 mb-4">
+                  <Store className="w-5 h-5" />
+                </div>
+
+                <h3 className="text-xl font-bold text-slate-950 tracking-tight mb-2">
+                  Vendor Network
+                </h3>
+                <p className="text-xs text-slate-600 leading-relaxed mb-6 font-normal">
+                  Dedicated portal for verified suppliers to respond to RFQs, submit binding quotations, and track purchase order fulfillment.
+                </p>
+
+                <div className="space-y-2 border-t border-slate-200 pt-4 mb-6 text-xs text-slate-700 font-medium">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">RFQ Submissions</span>
+                    <span className="font-semibold text-slate-900">Quotations</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">PO Status</span>
+                    <span className="font-semibold text-slate-900">Real-time</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-400">Invoices</span>
+                    <span className="font-semibold text-slate-900">Automated</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-200">
+                <button
+                  onClick={() => alert("Vendor Portal authentication will be integrated in Day 4/5.")}
+                  className="flex-1 py-2.5 px-4 bg-[#2383E2] hover:bg-[#1D72C9] text-white text-xs font-semibold uppercase tracking-wider rounded text-center transition cursor-pointer"
+                >
+                  VENDOR LOGIN
+                </button>
+                <button
+                  onClick={() => alert("Vendor Registration portal preview mode.")}
+                  className="flex-1 py-2.5 px-4 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-semibold uppercase tracking-wider rounded text-center transition cursor-pointer"
+                >
+                  REGISTER
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Clean Minimalist Feature Highlights */}
+      <section id="features" className="py-16 bg-slate-50 border-t border-slate-200 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-bold text-slate-950 tracking-tight uppercase">
+              Architecture & Features
+            </h2>
+            <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">
+              Day 2 Authentication & Multi-Tenancy Architecture
+            </p>
           </div>
 
-          {/* Vendor Portal Card (UI Only) */}
-          <div className="bg-[#FAFBFD] border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-xl hover:border-[#2383E2]/50 transition-all flex flex-col justify-between group">
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <div className="w-12 h-12 rounded-xl bg-sky-100 flex items-center justify-center text-sky-600">
-                  <Store className="w-6 h-6" />
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
-                  Supplier Network
-                </span>
-              </div>
-
-              <h3 className="text-2xl font-bold text-slate-950 tracking-tight mb-2">
-                Vendor Portal <span className="text-xs font-medium text-slate-400">(UI Preview)</span>
-              </h3>
-              <p className="text-slate-600 text-sm leading-relaxed mb-6">
-                For registered suppliers and vendors to view open RFQs, submit competitive quotations, track purchase orders, and manage invoices.
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white border border-slate-200 p-6 rounded shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#2383E2] mb-2 block">
+                01. DATABASE
+              </span>
+              <h3 className="text-sm font-bold text-slate-950 mb-2">Prisma & PostgreSQL</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Strict multi-tenant model mapping: Organization $\rightarrow$ OrganizationMember $\rightarrow$ User.
               </p>
-
-              <div className="space-y-3 mb-8 text-xs text-slate-700 font-medium">
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-600" />
-                  <span>RFQ Bidding & Quotation Submissions</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-600" />
-                  <span>Purchase Order & Delivery Status</span>
-                </div>
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-600" />
-                  <span>Invoice & Payment Tracking Dashboard</span>
-                </div>
-              </div>
             </div>
 
-            <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={() => alert("Vendor Portal authentication will be integrated in Day 4/5. Please use Buyer Portal for current active features.")}
-                className="flex-1 py-3 px-4 bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs rounded-lg shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Vendor Login</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => alert("Vendor Registration portal preview mode.")}
-                className="flex-1 py-3 px-4 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-medium text-xs rounded-lg transition flex items-center justify-center cursor-pointer"
-              >
-                Vendor Registration
-              </button>
+            <div className="bg-white border border-slate-200 p-6 rounded shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#2383E2] mb-2 block">
+                02. SECURITY
+              </span>
+              <h3 className="text-sm font-bold text-slate-950 mb-2">JWT & Argon2 Hashing</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Secure access token generation, HttpOnly refresh cookies, and salted password hashing.
+              </p>
+            </div>
+
+            <div className="bg-white border border-slate-200 p-6 rounded shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#2383E2] mb-2 block">
+                03. WORKSPACE
+              </span>
+              <h3 className="text-sm font-bold text-slate-950 mb-2">Organization Setup</h3>
+              <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                Transactional organization creation assigning the initial user the ORG_ADMIN role.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Feature Section (Notion Card Style Grid) */}
-      <section id="features" className="py-16 px-4 sm:px-6 max-w-6xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-extrabold text-slate-950 tracking-tight">
-            Building Blocks for Modern Procurement
-          </h2>
-          <p className="text-slate-600 text-sm mt-2">
-            Everything your team needs to run transparent, compliant procurement workflows.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="w-10 h-10 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#2383E2] mb-4">
-              <Layers className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-950 mb-2">Multi-Tenancy Isolation</h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Complete organization partitioning so every company operates in their own secure environment.
-            </p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="w-10 h-10 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#2383E2] mb-4">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-950 mb-2">Role-Based Access (RBAC)</h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Granular role assignment for ORG_ADMIN, Department Managers, Procurement Officers, and Finance.
-            </p>
-          </div>
-
-          <div className="bg-white border border-slate-200 p-6 rounded-xl shadow-sm hover:shadow-md transition">
-            <div className="w-10 h-10 rounded-lg bg-[#EDF5FF] flex items-center justify-center text-[#2383E2] mb-4">
-              <FileSpreadsheet className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-950 mb-2">RFQ & Vendor Bidding</h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Collect competitive quotes from trusted suppliers and streamline purchase order approvals.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Notion-Style Clean Footer */}
-      <footer className="mt-auto border-t border-slate-200 bg-white py-10 px-6 text-xs text-slate-500">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Footer (Matching Max Fashion clean footer) */}
+      <footer className="bg-slate-950 text-white py-12 px-6 text-xs">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-6 h-6 rounded bg-slate-950 text-white font-bold flex items-center justify-center text-xs">
-              N
+            <div className="w-7 h-7 rounded bg-white text-slate-950 font-black flex items-center justify-center text-sm">
+              T
             </div>
-            <span className="font-semibold text-slate-900">Tenour Cloud</span>
-            <span>© 2026 Tenour, Inc.</span>
+            <span className="font-extrabold tracking-tighter text-sm">TENOUR CLOUD</span>
           </div>
-          <div className="flex items-center gap-6 text-slate-600">
-            <Link href="/buyer/login" className="hover:text-slate-950 transition">
-              Buyer Portal
+
+          <div className="flex items-center gap-8 text-slate-400 font-medium">
+            <Link href="/buyer/login" className="hover:text-white transition">
+              BUYER LOGIN
             </Link>
-            <a href="#portals" className="hover:text-slate-950 transition">
-              Vendor Portal
-            </a>
-            <a href="#features" className="hover:text-slate-950 transition">
-              Security & Compliance
+            <Link href="/buyer/register" className="hover:text-white transition">
+              BUYER REGISTER
+            </Link>
+            <a href="#portals" className="hover:text-white transition">
+              VENDOR NETWORK
             </a>
           </div>
+
+          <span className="text-slate-500">© 2026 TENOUR PROCUREMENT platform</span>
         </div>
       </footer>
     </div>
