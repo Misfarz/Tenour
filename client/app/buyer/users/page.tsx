@@ -17,6 +17,7 @@ import {
   LogOut,
   Mail,
   Trash2,
+  ExternalLink,
 } from "lucide-react";
 
 interface OrgUser {
@@ -53,6 +54,7 @@ export default function BuyerUsersPage() {
   const [addDeptId, setAddDeptId] = useState<string>("");
 
   const [createdInviteUrl, setCreatedInviteUrl] = useState<string | null>(null);
+  const [emailPreviewUrl, setEmailPreviewUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
 
   const [error, setError] = useState<string | null>(null);
@@ -147,9 +149,12 @@ export default function BuyerUsersPage() {
       });
 
       if (res.success && res.data) {
-        setSuccess(`Invitation created for ${addName} (${addEmail}).`);
+        setSuccess(`Invitation email sent to ${addEmail}.`);
         if (res.data.invitationUrl) {
           setCreatedInviteUrl(res.data.invitationUrl);
+        }
+        if (res.data.emailPreviewUrl) {
+          setEmailPreviewUrl(res.data.emailPreviewUrl);
         }
         setShowAddModal(false);
         setAddName("");
@@ -310,14 +315,14 @@ export default function BuyerUsersPage() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2 text-[#1D72C9] font-bold text-sm">
                 <Mail className="w-4 h-4" />
-                <span>Development Invitation Link Generated</span>
+                <span>Invitation Email Sent Successfully</span>
               </div>
-              <button onClick={() => setCreatedInviteUrl(null)} className="text-slate-400 hover:text-slate-600 font-bold text-xs">✕ Dismiss</button>
+              <button onClick={() => { setCreatedInviteUrl(null); setEmailPreviewUrl(null); }} className="text-slate-400 hover:text-slate-600 font-bold text-xs">✕ Dismiss</button>
             </div>
             <p className="text-xs text-slate-600 mb-3">
-              Copy and open this link to test accepting the invitation and setting a password:
+              An HTML invitation email was dispatched. You can also copy the link below or open the test email preview:
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <input
                 type="text"
                 readOnly
@@ -326,11 +331,22 @@ export default function BuyerUsersPage() {
               />
               <button
                 onClick={copyInviteLink}
-                className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-white" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? "Copied!" : "Copy Link"}</span>
               </button>
+              {emailPreviewUrl && (
+                <a
+                  href={emailPreviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-4 py-2 bg-white border border-[#2383E2] text-[#2383E2] hover:bg-slate-50 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                >
+                  <span>Preview Sent Email</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
             </div>
           </div>
         )}

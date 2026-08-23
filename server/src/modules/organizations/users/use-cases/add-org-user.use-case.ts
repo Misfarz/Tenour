@@ -1,6 +1,7 @@
 import { AddOrgUserInput } from "../org-users.schemas";
 import { OrgInvitationRepository } from "../../invitations/org-invitation.repository";
 import { prisma } from "../../../../infrastructure/database/prisma/prisma.client";
+import { sendInvitationEmail } from "../../../../shared/utils/email.utils";
 
 export class AddOrgUserUseCase {
   static async execute(organizationId: string, input: AddOrgUserInput) {
@@ -28,6 +29,15 @@ export class AddOrgUserUseCase {
     const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
     const invitationUrl = `${clientUrl}/buyer/accept-invitation?token=${invitation.token}`;
 
+    // Dispatches real HTML email (or returns Ethereal test preview URL if no SMTP credentials set)
+    const emailPreviewUrl = await sendInvitationEmail({
+      toEmail: invitation.email,
+      recipientName: invitation.name,
+      organizationName: invitation.organizationName,
+      roleName: invitation.role,
+      invitationUrl,
+    });
+
     return {
       id: invitation.memberId,
       invitationId: invitation.id,
@@ -39,6 +49,7 @@ export class AddOrgUserUseCase {
       token: invitation.token,
       expiresAt: invitation.expiresAt,
       invitationUrl,
+      emailPreviewUrl,
     };
   }
 }
