@@ -1,182 +1,346 @@
 "use client";
 
-import { useAuth } from "@/context/auth-context";
+import { useState } from "react";
 import Link from "next/link";
-import { LogOut, User as UserIcon, Mail, ShieldCheck, Sparkles, Loader2, ArrowRight, Building2 } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
+import {
+  Building2,
+  Store,
+  ShieldCheck,
+  ArrowRight,
+  Sparkles,
+  Layers,
+  Users,
+  FileSpreadsheet,
+  CheckCircle2,
+  Lock,
+  LogOut,
+  User as UserIcon,
+  Loader2,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
 
 export default function HomePage() {
   const { user, organization, isLoading, isAuthenticated, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState<"buyer" | "vendor">("buyer");
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 text-neutral-400">
+      <div className="min-h-screen flex items-center justify-center bg-[#071325] text-neutral-300">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <p className="text-sm font-medium">Loading session...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-neutral-950 to-neutral-950">
-        <div className="w-full max-w-md text-center p-8 bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-xl rounded-2xl shadow-2xl">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white mb-6 shadow-xl shadow-indigo-500/20">
-            <Sparkles className="w-7 h-7" />
-          </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">Tenour Platform</h1>
-          <p className="text-neutral-400 text-sm mb-8">
-            Modern SaaS Procurement & Accounts Infrastructure.
-          </p>
-
-          <div className="flex flex-col gap-3">
-            <Link
-              href="/buyer/register"
-              className="w-full py-3.5 px-4 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm rounded-xl shadow-lg shadow-indigo-500/25 transition flex items-center justify-center gap-2"
-            >
-              <span>I'm a Buyer</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-
-            <Link
-              href="/buyer/login"
-              className="w-full py-3 px-4 bg-neutral-800/80 hover:bg-neutral-800 text-neutral-200 font-medium text-sm rounded-xl border border-neutral-700/80 transition flex items-center justify-center"
-            >
-              Buyer Sign In
-            </Link>
-          </div>
+          <Loader2 className="w-8 h-8 text-[#0065FF] animate-spin" />
+          <p className="text-sm font-medium text-slate-300">Loading Tenour Platform...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col">
-      {/* Top Navigation Bar */}
-      <header className="border-b border-neutral-800/80 bg-neutral-900/50 backdrop-blur-xl sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/20">
-              T
-            </div>
-            <div>
-              <h1 className="text-base font-bold text-white leading-none">Tenour</h1>
-              <span className="text-xs text-neutral-400">Workspace</span>
-            </div>
+    <div className="min-h-screen bg-[#071325] text-slate-100 flex flex-col font-sans selection:bg-[#0052CC] selection:text-white">
+      {/* Top Atlassian Jira-Style Navigation Bar */}
+      <header className="border-b border-[#1E293B] bg-[#091E42]/80 backdrop-blur-md sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-8">
+            {/* Jira-style logo brand mark */}
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-[#0052CC] via-[#0065FF] to-[#4C9AFF] flex items-center justify-center text-white font-black text-lg shadow-md shadow-[#0052CC]/30 group-hover:scale-105 transition-transform">
+                T
+              </div>
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-lg text-white tracking-tight">Tenour</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#0052CC]/20 text-[#4C9AFF] border border-[#0052CC]/30">
+                    SaaS
+                  </span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-medium leading-none">Procurement Cloud</span>
+              </div>
+            </Link>
+
+            {/* Nav Links */}
+            <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-300">
+              <a href="#portals" className="hover:text-white transition">Portals</a>
+              <a href="#features" className="hover:text-white transition">Platform Solutions</a>
+              <a href="#architecture" className="hover:text-white transition">Architecture</a>
+            </nav>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 text-xs font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              Authenticated
-            </div>
-
-            <button
-              onClick={logout}
-              className="px-4 py-2 bg-neutral-800 hover:bg-red-950/60 hover:border-red-800/60 text-neutral-300 hover:text-red-300 text-xs font-medium rounded-xl border border-neutral-700/60 transition duration-200 flex items-center gap-2 group cursor-pointer"
-            >
-              <LogOut className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
-              <span>Logout</span>
-            </button>
+          <div className="flex items-center gap-3">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <Link
+                  href={organization ? "/buyer/dashboard" : "/buyer/setup-organization"}
+                  className="px-3.5 py-1.5 rounded-md bg-[#0052CC] hover:bg-[#0747A6] text-white text-xs font-semibold shadow-md shadow-[#0052CC]/20 transition flex items-center gap-1.5"
+                >
+                  <span>Dashboard</span>
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </Link>
+                <button
+                  onClick={logout}
+                  className="px-3 py-1.5 rounded-md bg-[#1E293B] hover:bg-slate-800 text-slate-300 text-xs font-medium border border-slate-700 transition flex items-center gap-1.5"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/buyer/login"
+                  className="px-3.5 py-1.5 rounded-md text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+                >
+                  Buyer Sign In
+                </Link>
+                <Link
+                  href="/buyer/register"
+                  className="px-3.5 py-1.5 rounded-md bg-[#0052CC] hover:bg-[#0747A6] text-white text-xs font-semibold shadow-md shadow-[#0052CC]/25 transition flex items-center gap-1"
+                >
+                  <span>Get Started</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-12 flex flex-col gap-8">
-        {/* Welcome Banner */}
-        <div className="relative overflow-hidden p-8 rounded-3xl bg-gradient-to-r from-indigo-900/40 via-purple-900/20 to-neutral-900/80 border border-indigo-500/20 shadow-2xl">
-          <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* User Logged-in Notice Banner (If authenticated) */}
+      {isAuthenticated && user && (
+        <div className="bg-[#0052CC]/15 border-b border-[#0052CC]/30 py-2.5 px-4 text-center text-xs text-[#4C9AFF]">
+          <span className="font-semibold">Logged in as {user.name} ({user.email})</span> — You are active in organization:{" "}
+          <span className="font-bold text-white">{organization?.name || "Not setup"}</span>.{" "}
+          <Link href="/buyer/dashboard" className="underline font-semibold ml-1 text-white hover:text-[#4C9AFF]">
+            Go to Buyer Dashboard →
+          </Link>
+        </div>
+      )}
 
-          <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-medium mb-4">
-              <Sparkles className="w-3.5 h-3.5" /> Welcome back
+      {/* Hero Section */}
+      <section className="relative pt-16 pb-20 px-4 sm:px-6 max-w-7xl mx-auto text-center overflow-hidden">
+        {/* Atlassian style radial backdrop glows */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#0052CC]/15 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-20 right-1/4 w-[400px] h-[250px] bg-[#00B8D9]/10 rounded-full blur-[100px] pointer-events-none" />
+
+        <div className="relative z-10 max-w-4xl mx-auto flex flex-col items-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0052CC]/15 border border-[#0052CC]/30 text-[#4C9AFF] text-xs font-medium mb-6">
+            <Sparkles className="w-3.5 h-3.5 text-[#00B8D9]" />
+            <span>Jira-Inspired Enterprise Procurement Suite</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.15] max-w-3xl">
+            Enterprise procurement, <br />
+            <span className="bg-gradient-to-r from-[#4C9AFF] via-[#00B8D9] to-[#0052CC] bg-clip-text text-transparent">
+              built with Jira agility.
             </span>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Hello, {user.name}!
-            </h2>
-            <p className="text-neutral-400 text-sm mt-2 leading-relaxed">
-              You are signed in to your Tenour account.
-            </p>
-            <div className="mt-6">
+          </h1>
+
+          <p className="mt-5 text-base sm:text-lg text-slate-300 max-w-2xl font-normal leading-relaxed">
+            Manage purchase requests, supplier quotations, multi-level approvals, and budget isolation in a unified, high-performance platform.
+          </p>
+
+          {/* Quick jump to portals */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <a
+              href="#portals"
+              className="px-6 py-3.5 rounded-lg bg-[#0052CC] hover:bg-[#0747A6] text-white font-semibold text-sm shadow-xl shadow-[#0052CC]/30 transition flex items-center gap-2"
+            >
+              <span>Explore Access Portals</span>
+              <ArrowRight className="w-4 h-4" />
+            </a>
+            <a
+              href="#features"
+              className="px-6 py-3.5 rounded-lg bg-[#172B4D] hover:bg-slate-800 text-slate-200 font-medium text-sm border border-slate-700 transition"
+            >
+              View Features
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Portals Section (Buyer & Vendor Portals) */}
+      <section id="portals" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto w-full relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Select Your Access Portal
+          </h2>
+          <p className="text-slate-400 text-sm mt-2 max-w-xl mx-auto">
+            Choose your gateway to enter Tenour's buyer workspace or supplier collaboration network.
+          </p>
+        </div>
+
+        {/* Portals Toggle / Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Buyer Portal Card */}
+          <div className="bg-[#091E42] border border-[#0052CC]/40 rounded-2xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between hover:border-[#0052CC] transition-all group">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#0052CC]/10 rounded-full blur-2xl pointer-events-none" />
+
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 rounded-xl bg-[#0052CC]/20 border border-[#0052CC]/40 flex items-center justify-center text-[#4C9AFF] shadow-inner">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#0052CC]/20 text-[#4C9AFF] border border-[#0052CC]/30">
+                  Buyer Workspace
+                </span>
+              </div>
+
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">
+                Buyer Portal
+              </h3>
+              <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                For corporate procurement officers, department managers, and finance administrators to manage purchase requests, approval chains, and organization settings.
+              </p>
+
+              <div className="space-y-2.5 mb-8 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00B8D9]" />
+                  <span>Organization & Team Management (ORG_ADMIN)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00B8D9]" />
+                  <span>Purchase Requests & Budget Multi-tenancy</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00B8D9]" />
+                  <span>Role-Based Access Control (RBAC)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row gap-3">
               <Link
-                href={organization ? "/buyer/dashboard" : "/buyer/setup-organization"}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-medium text-sm shadow-lg shadow-indigo-500/25 transition"
+                href="/buyer/login"
+                className="flex-1 py-3 px-4 bg-[#0052CC] hover:bg-[#0747A6] text-white font-semibold text-xs rounded-lg shadow-md shadow-[#0052CC]/25 transition flex items-center justify-center gap-2"
               >
-                <span>{organization ? "Go to Buyer Dashboard" : "Set up Organization"}</span>
+                <span>Buyer Login</span>
                 <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/buyer/register"
+                className="flex-1 py-3 px-4 bg-[#172B4D] hover:bg-slate-800 text-slate-200 font-medium text-xs rounded-lg border border-slate-700 transition flex items-center justify-center"
+              >
+                Create Buyer Account
               </Link>
             </div>
           </div>
-        </div>
 
-        {/* User Info & Session Card */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-xl">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-sm font-semibold text-neutral-200 flex items-center gap-2">
-                <UserIcon className="w-4 h-4 text-indigo-400" />
-                Profile Information
-              </h3>
-              <span className="text-xs px-2.5 py-1 rounded-lg bg-neutral-800 text-neutral-400 border border-neutral-700/50">
-                User Profile
-              </span>
-            </div>
+          {/* Vendor Portal Card (UI Only) */}
+          <div className="bg-[#091E42] border border-[#00B8D9]/40 rounded-2xl p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between hover:border-[#00B8D9] transition-all group">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#00B8D9]/10 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="space-y-4 text-sm">
-              <div className="flex items-center justify-between py-2 border-b border-neutral-800/60">
-                <span className="text-neutral-500 text-xs">User ID</span>
-                <span className="font-mono text-xs text-neutral-300 truncate max-w-[200px]">
-                  {user.id}
-                </span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-neutral-800/60">
-                <span className="text-neutral-500 text-xs">Full Name</span>
-                <span className="text-neutral-200 font-medium">{user.name}</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <span className="text-neutral-500 text-xs">Email</span>
-                <span className="text-neutral-200 font-medium flex items-center gap-1.5">
-                  <Mail className="w-3.5 h-3.5 text-neutral-400" />
-                  {user.email}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-xl flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-neutral-200 flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                  Security & Session
-                </h3>
-                <span className="text-xs px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-800/50">
-                  Active Session
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-12 h-12 rounded-xl bg-[#00B8D9]/20 border border-[#00B8D9]/40 flex items-center justify-center text-[#00B8D9] shadow-inner">
+                  <Store className="w-6 h-6" />
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-[#00B8D9]/20 text-[#00B8D9] border border-[#00B8D9]/30">
+                  Supplier Network
                 </span>
               </div>
-              <p className="text-xs text-neutral-400 leading-relaxed mb-4">
-                Your session is secured using HttpOnly cookies and password encryption.
+
+              <h3 className="text-2xl font-bold text-white tracking-tight mb-2">
+                Vendor Portal <span className="text-xs font-normal text-slate-400">(UI Preview)</span>
+              </h3>
+              <p className="text-slate-300 text-sm leading-relaxed mb-6">
+                For registered suppliers and vendors to review RFQs, submit competitive quotations, track purchase orders, and manage invoice payments.
               </p>
+
+              <div className="space-y-2.5 mb-8 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#4C9AFF]" />
+                  <span>RFQ Bidding & Quotation Submission</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#4C9AFF]" />
+                  <span>Purchase Order & Delivery Tracking</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#4C9AFF]" />
+                  <span>Invoice & Payment Status Dashboard</span>
+                </div>
+              </div>
             </div>
 
-            <div className="pt-4 border-t border-neutral-800/60">
+            <div className="pt-6 border-t border-slate-800 flex flex-col sm:flex-row gap-3">
               <button
-                onClick={logout}
-                className="w-full py-3 px-4 bg-red-950/40 hover:bg-red-900/60 text-red-300 font-medium text-xs rounded-xl border border-red-800/50 transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-950/20"
+                onClick={() => alert("Vendor Portal authentication will be integrated in Day 4/5. Please use Buyer Portal for current active features.")}
+                className="flex-1 py-3 px-4 bg-[#008DA6] hover:bg-[#007A91] text-white font-semibold text-xs rounded-lg shadow-md shadow-[#008DA6]/25 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <LogOut className="w-4 h-4" />
-                <span>Logout of Tenour</span>
+                <span>Vendor Login</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => alert("Vendor Registration portal preview mode.")}
+                className="flex-1 py-3 px-4 bg-[#172B4D] hover:bg-slate-800 text-slate-200 font-medium text-xs rounded-lg border border-slate-700 transition flex items-center justify-center cursor-pointer"
+              >
+                Vendor Registration
               </button>
             </div>
           </div>
         </div>
-      </main>
+      </section>
+
+      {/* Feature Section (Jira / Atlassian Design System Cards) */}
+      <section id="features" className="py-16 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+        <div className="text-center mb-12">
+          <span className="text-xs font-bold uppercase tracking-widest text-[#4C9AFF] mb-2 block">
+            Core Capabilities
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Designed for Enterprise Governance & Speed
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-[#091E42]/60 border border-slate-800 p-6 rounded-xl backdrop-blur-sm hover:border-[#0052CC]/50 transition">
+            <div className="w-10 h-10 rounded-lg bg-[#0052CC]/15 flex items-center justify-center text-[#4C9AFF] mb-4">
+              <Layers className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-white mb-2">Multi-Tenant Isolation</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Complete separation of organizations, members, and procurement data with zero cross-tenant data leakage.
+            </p>
+          </div>
+
+          <div className="bg-[#091E42]/60 border border-slate-800 p-6 rounded-xl backdrop-blur-sm hover:border-[#0052CC]/50 transition">
+            <div className="w-10 h-10 rounded-lg bg-[#00B8D9]/15 flex items-center justify-center text-[#00B8D9] mb-4">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-white mb-2">Role-Based Access (RBAC)</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Define ORG_ADMIN, Procurement Managers, Finance Approvers, and Employees with granular field permissions.
+            </p>
+          </div>
+
+          <div className="bg-[#091E42]/60 border border-slate-800 p-6 rounded-xl backdrop-blur-sm hover:border-[#0052CC]/50 transition">
+            <div className="w-10 h-10 rounded-lg bg-[#36B37E]/15 flex items-center justify-center text-[#36B37E] mb-4">
+              <FileSpreadsheet className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-white mb-2">RFQ & Quotation Matrix</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Compare supplier bids side-by-side, automate vendor selection, and issue verified purchase orders instantly.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="border-t border-neutral-800/60 py-6 text-center text-xs text-neutral-500">
-        Tenour Platform • Clean Architecture Auth Module
+      <footer className="mt-auto border-t border-[#1E293B] bg-[#071325] py-8 px-4 text-center text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-[#0052CC] text-white font-bold flex items-center justify-center text-xs">
+              T
+            </div>
+            <span className="font-semibold text-slate-200">Tenour Platform</span>
+            <span>© 2026 Tenour SaaS</span>
+          </div>
+          <div className="flex items-center gap-6 text-slate-400">
+            <a href="#portals" className="hover:text-white transition">Buyer Portal</a>
+            <a href="#portals" className="hover:text-white transition">Vendor Portal</a>
+            <a href="#features" className="hover:text-white transition">System Architecture</a>
+          </div>
+        </div>
       </footer>
     </div>
   );
