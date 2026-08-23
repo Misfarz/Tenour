@@ -12,10 +12,11 @@ let testTransporter: nodemailer.Transporter | null = null;
 
 async function getTransporter(): Promise<nodemailer.Transporter | null> {
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const isGmail = process.env.SMTP_HOST.includes("gmail");
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_SECURE === "true",
+      port: Number(process.env.SMTP_PORT) || (isGmail ? 465 : 587),
+      secure: isGmail || process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -53,7 +54,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
       return params.invitationUrl;
     }
 
-    const fromAddress = process.env.SMTP_FROM || '"Tenour Platform" <noreply@tenour.com>';
+    const fromAddress = process.env.SMTP_FROM || `"Tenour Platform" <${process.env.SMTP_USER || "noreply@tenour.com"}>`;
     const subject = `You've been invited to join ${params.organizationName} on Tenour`;
 
     const htmlContent = `
@@ -109,6 +110,9 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
     return null;
   } catch (error: any) {
     console.error(`[Email Utility] ❌ Failed to send email to ${params.toEmail}:`, error.message);
+    if (error.message?.includes("Invalid login") || error.message?.includes("Username and Password not accepted")) {
+      console.error(`[Email Utility] 💡 Gmail Tip: Standard Gmail passwords are blocked. Please generate a 16-character Google App Password at: https://myaccount.google.com/apppasswords and use it as SMTP_PASS in server/.env`);
+    }
     return null;
   }
 }
