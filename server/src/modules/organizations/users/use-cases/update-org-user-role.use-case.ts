@@ -8,6 +8,16 @@ export class UpdateOrgUserRoleUseCase {
       throw new Error("User not found in your organization");
     }
 
+    // Protection against demoting the last ORG_ADMIN
+    if (member.role.name === "ORG_ADMIN" && input.role !== "ORG_ADMIN") {
+      const activeAdmins = await OrgUsersRepository.countActiveAdmins(organizationId);
+      if (activeAdmins <= 1) {
+        throw new Error(
+          "Cannot demote the only Organization Admin. Promote another member to ORG_ADMIN first."
+        );
+      }
+    }
+
     const newRole = await OrgUsersRepository.findOrCreateRole(organizationId, input.role);
     const updated = await OrgUsersRepository.updateMemberRole(member.id, newRole.id);
 

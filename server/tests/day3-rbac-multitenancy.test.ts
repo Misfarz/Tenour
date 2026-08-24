@@ -285,6 +285,25 @@ describe("Day 3 Complete Suite: Multi-Tenancy, RBAC & Invitation Flow", () => {
       expect(res.body.message).toContain("Cannot delete the only organization admin");
     });
 
+    it("Prevents demoting the only ORG_ADMIN to another role", async () => {
+      const usersRes = await request(app)
+        .get("/organizations/users")
+        .set("Authorization", `Bearer ${abcAccessToken}`)
+        .expect(200);
+
+      const adminMember = usersRes.body.data.find((u: any) => u.role === "ORG_ADMIN");
+      expect(adminMember).toBeDefined();
+
+      const res = await request(app)
+        .patch(`/organizations/users/${adminMember.id}/role`)
+        .set("Authorization", `Bearer ${abcAccessToken}`)
+        .send({ role: "MANAGER" })
+        .expect(400);
+
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toContain("Cannot demote the only Organization Admin");
+    });
+
     it("XYZ Admin cannot delete an ABC user (returns 404)", async () => {
       const res = await request(app)
         .delete(`/organizations/users/${deleteTargetMemberId}`)
