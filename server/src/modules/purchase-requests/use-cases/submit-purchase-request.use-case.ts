@@ -38,6 +38,6 @@ export class SubmitPurchaseRequestUseCase {
       }
     }
 
-    return PurchaseRequestRepository.submitRequest(requestId);
+    return PurchaseRequestRepository.submitRequest(requestId, organizationId);
   }
 }

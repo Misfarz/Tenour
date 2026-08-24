@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { LogOut, Building2, ShieldCheck, User as UserIcon, Loader2, Users, FolderGit2, Settings, FileText, Plus } from "lucide-react";
+import { LogOut, Building2, ShieldCheck, User as UserIcon, Loader2, Users, FolderGit2, Settings, FileText, Plus, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 export default function BuyerDashboardPage() {
@@ -60,6 +60,11 @@ export default function BuyerDashboardPage() {
           <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
             <Link href="/buyer/dashboard" className="text-[#2383E2] font-semibold">Dashboard</Link>
             <Link href="/buyer/purchase-requests" className="hover:text-slate-950 transition">Purchase Requests</Link>
+            {displayRole === "MANAGER" && (
+              <Link href="/buyer/approvals" className="hover:text-slate-950 transition font-semibold text-[#1D72C9]">
+                Approvals
+              </Link>
+            )}
             {displayRole === "ORG_ADMIN" && (
               <>
                 <Link href="/buyer/users" className="hover:text-slate-950 transition">User Management</Link>
@@ -125,6 +130,24 @@ export default function BuyerDashboardPage() {
             </div>
             <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
           </Link>
+
+          {displayRole === "MANAGER" && (
+            <Link
+              href="/buyer/approvals"
+              className="bg-white border border-amber-200 hover:border-amber-400 p-5 rounded-2xl shadow-sm hover:shadow-md transition flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-950 group-hover:text-amber-600 transition">Manager Approvals</h3>
+                  <p className="text-xs text-slate-500">Review pending requests</p>
+                </div>
+              </div>
+              <span className="text-slate-400 group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          )}
 
           {displayRole === "ORG_ADMIN" && (
             <>

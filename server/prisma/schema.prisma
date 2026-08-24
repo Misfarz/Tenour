@@ -15,6 +15,7 @@ model User {
   updatedAt        DateTime             @updatedAt
   memberships      OrganizationMember[]
   purchaseRequests PurchaseRequest[]
+  purchaseApprovals PurchaseApproval[]
 
   @@map("users")
 }
@@ -115,6 +116,7 @@ model PurchaseRequest {
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   items          PurchaseRequestItem[]
+  approval       PurchaseApproval?
 
   @@map("purchase_requests")
 }
@@ -132,4 +134,20 @@ model PurchaseRequestItem {
   updatedAt          DateTime        @updatedAt
 
   @@map("purchase_request_items")
+}
+
+model PurchaseApproval {
+  id                String          @id @default(uuid())
+  purchaseRequestId String          @unique
+  purchaseRequest   PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+  approverId        String?
+  approver          User?           @relation(fields: [approverId], references: [id], onDelete: SetNull)
+  status            String          @default("PENDING")
+  rejectionReason   String?
+  approvedAt        DateTime?
+  rejectedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("purchase_approvals")
 }

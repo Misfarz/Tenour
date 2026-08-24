@@ -14,10 +14,12 @@ import {
   Send,
   Building2,
   CheckCircle2,
+  XCircle,
   Clock,
   LogOut,
   Save,
   Plus,
+  ShieldCheck,
 } from "lucide-react";
 
 interface PurchaseRequestItem {
@@ -27,6 +29,19 @@ interface PurchaseRequestItem {
   quantity: number;
   estimatedUnitPrice: number;
   estimatedTotal: number;
+}
+
+interface PurchaseApprovalDetail {
+  id: string;
+  status: string;
+  rejectionReason?: string | null;
+  approvedAt?: string | null;
+  rejectedAt?: string | null;
+  approver?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
 }
 
 interface PurchaseRequestDetail {
@@ -51,6 +66,7 @@ interface PurchaseRequestDetail {
   } | null;
   departmentId?: string | null;
   items: PurchaseRequestItem[];
+  approval?: PurchaseApprovalDetail | null;
 }
 
 interface Department {
@@ -97,7 +113,6 @@ export default function BuyerPurchaseRequestDetailPage({
 
       if (prRes.success && prRes.data) {
         setPr(prRes.data);
-        // Initialize edit states
         setEditTitle(prRes.data.title);
         setEditDescription(prRes.data.description || "");
         setEditJustification(prRes.data.justification || "");
@@ -213,7 +228,7 @@ export default function BuyerPurchaseRequestDetailPage({
       <div className="min-h-screen flex items-center justify-center bg-white text-slate-600 font-sans">
         <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
           <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading details...</span>
+          <span className="text-sm font-medium text-slate-700 font-sans">Loading details...</span>
         </div>
       </div>
     );
@@ -263,6 +278,57 @@ export default function BuyerPurchaseRequestDetailPage({
           <span>Back to Purchase Requests</span>
         </Link>
 
+        {/* Approval / Rejection Audit Banner */}
+        {pr.status === "APPROVED" && pr.approval && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-emerald-950 text-sm">Purchase Request Approved</h3>
+              <p className="text-xs text-emerald-800 mt-1">
+                Approved by <span className="font-semibold">{pr.approval.approver?.name || "Manager"}</span> ({pr.approval.approver?.email}) on{" "}
+                {pr.approval.approvedAt
+                  ? new Date(pr.approval.approvedAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "Date recorded"}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {pr.status === "REJECTED" && pr.approval && (
+          <div className="bg-red-50 border border-red-200 rounded-2xl p-6 flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0">
+              <XCircle className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="font-bold text-red-950 text-sm">Purchase Request Rejected</h3>
+              <p className="text-xs text-red-800 mt-1">
+                Rejected by <span className="font-semibold">{pr.approval.approver?.name || "Manager"}</span> on{" "}
+                {pr.approval.rejectedAt
+                  ? new Date(pr.approval.rejectedAt).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })
+                  : "Date recorded"}
+              </p>
+              {pr.approval.rejectionReason && (
+                <div className="mt-3 p-3 bg-white/80 border border-red-200 rounded-xl text-xs text-red-900 font-medium">
+                  <span className="font-bold block text-[11px] uppercase tracking-wider text-red-700 mb-0.5">Rejection Reason:</span>
+                  {pr.approval.rejectionReason}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Alerts */}
         {error && (
           <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
@@ -303,6 +369,12 @@ export default function BuyerPurchaseRequestDetailPage({
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-semibold">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                     APPROVED
+                  </span>
+                )}
+                {pr.status === "REJECTED" && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    REJECTED
                   </span>
                 )}
               </div>

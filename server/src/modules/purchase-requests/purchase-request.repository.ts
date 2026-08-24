@@ -4,8 +4,9 @@ import { CreatePurchaseRequestInput, UpdatePurchaseRequestInput } from "./purcha
 export class PurchaseRequestRepository {
   static async generateRequestNumber(): Promise<string> {
     const count = await prisma.purchaseRequest.count();
-    let nextNumber = count + 1;
-    let candidate = `PR-${String(nextNumber).padStart(6, "0")}`;
+    const nextNumber = count + 1;
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    let candidate = `PR-${String(nextNumber).padStart(4, "0")}${randomSuffix}`;
 
     let exists = await prisma.purchaseRequest.findUnique({
       where: { requestNumber: candidate },
@@ -13,8 +14,8 @@ export class PurchaseRequestRepository {
 
     let offset = 0;
     while (exists) {
-      offset += 1;
-      candidate = `PR-${String(nextNumber + offset).padStart(6, "0")}`;
+      offset += Math.floor(Math.random() * 10) + 1;
+      candidate = `PR-${String(nextNumber + offset).padStart(4, "0")}${randomSuffix}`;
       exists = await prisma.purchaseRequest.findUnique({
         where: { requestNumber: candidate },
       });
@@ -30,9 +31,6 @@ export class PurchaseRequestRepository {
   }) {
     const { organizationId, requesterId, input } = params;
 
-    const requestNumber = await this.generateRequestNumber();
-
-    // Calculate line item totals & request total
     const processedItems = input.items.map((item) => {
       const estimatedTotal = Number((item.quantity * item.estimatedUnitPrice).toFixed(2));
       return {
@@ -46,34 +44,59 @@ export class PurchaseRequestRepository {
 
     const requestEstimatedTotal = processedItems.reduce((sum, item) => sum + item.estimatedTotal, 0);
 
-    return prisma.purchaseRequest.create({
-      data: {
-        requestNumber,
-        organizationId,
-        requesterId,
-        departmentId: input.departmentId || null,
-        title: input.title.trim(),
-        description: input.description?.trim() || null,
-        justification: input.justification?.trim() || null,
-        status: "DRAFT",
-        estimatedTotal: requestEstimatedTotal,
-        items: {
-          create: processedItems,
-        },
-      },
-      include: {
-        items: true,
-        requester: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        const requestNumber = await this.generateRequestNumber();
+        return await prisma.purchaseRequest.create({
+          data: {
+            requestNumber,
+            organizationId,
+            requesterId,
+            departmentId: input.departmentId || null,
+            title: input.title.trim(),
+            description: input.description?.trim() || null,
+            justification: input.justification?.trim() || null,
+            status: "DRAFT",
+            estimatedTotal: requestEstimatedTotal,
+            items: {
+              create: processedItems,
+            },
           },
-        },
-        department: true,
-        organization: true,
-      },
-    });
+          include: {
+            items: true,
+            requester: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            department: true,
+            organization: true,
+            approval: {
+              include: {
+                approver: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+      } catch (err: any) {
+        if (err.code === "P2002" && retries > 1) {
+          retries--;
+          continue;
+        }
+        throw err;
+      }
+    }
+
+    throw new Error("Failed to generate unique request number");
   }
 
   static async findRequestsByOrg(organizationId: string, filterUserId?: string) {
@@ -94,6 +117,17 @@ export class PurchaseRequestRepository {
           },
         },
         department: true,
+        approval: {
+          include: {
+            approver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -116,6 +150,17 @@ export class PurchaseRequestRepository {
         },
         department: true,
         organization: true,
+        approval: {
+          include: {
+            approver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
     });
   }
@@ -135,12 +180,10 @@ export class PurchaseRequestRepository {
     const requestEstimatedTotal = processedItems.reduce((sum, item) => sum + item.estimatedTotal, 0);
 
     return prisma.$transaction(async (tx) => {
-      // 1. Delete existing items
       await tx.purchaseRequestItem.deleteMany({
         where: { purchaseRequestId: requestId },
       });
 
-      // 2. Update purchase request & insert new items
       return tx.purchaseRequest.update({
         where: { id: requestId },
         data: {
@@ -163,6 +206,17 @@ export class PurchaseRequestRepository {
             },
           },
           department: true,
+          approval: {
+            include: {
+              approver: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
         },
       });
     });
@@ -174,11 +228,94 @@ export class PurchaseRequestRepository {
     });
   }
 
-  static async submitRequest(requestId: string) {
-    return prisma.purchaseRequest.update({
-      where: { id: requestId },
-      data: {
+  static async submitRequest(requestId: string, organizationId: string) {
+    // Look up an active MANAGER in the requester's organization
+    const managerMember = await prisma.organizationMember.findFirst({
+      where: {
+        organizationId,
+        status: "ACTIVE",
+        role: {
+          name: "MANAGER",
+        },
+      },
+    });
+
+    if (!managerMember) {
+      throw new Error("No manager available for approval in this organization");
+    }
+
+    return prisma.$transaction(async (tx) => {
+      const updatedRequest = await tx.purchaseRequest.update({
+        where: { id: requestId },
+        data: {
+          status: "PENDING_APPROVAL",
+        },
+        include: {
+          items: true,
+          requester: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          department: true,
+        },
+      });
+
+      await tx.purchaseApproval.upsert({
+        where: { purchaseRequestId: requestId },
+        create: {
+          purchaseRequestId: requestId,
+          approverId: managerMember.userId,
+          status: "PENDING",
+        },
+        update: {
+          approverId: managerMember.userId,
+          status: "PENDING",
+          rejectionReason: null,
+          approvedAt: null,
+          rejectedAt: null,
+        },
+      });
+
+      return tx.purchaseRequest.findUnique({
+        where: { id: requestId },
+        include: {
+          items: true,
+          requester: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          department: true,
+          approval: {
+            include: {
+              approver: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+  }
+
+  static async findPendingApprovals(organizationId: string, managerUserId: string) {
+    return prisma.purchaseRequest.findMany({
+      where: {
+        organizationId,
         status: "PENDING_APPROVAL",
+        approval: {
+          approverId: managerUserId,
+          status: "PENDING",
+        },
       },
       include: {
         items: true,
@@ -190,7 +327,116 @@ export class PurchaseRequestRepository {
           },
         },
         department: true,
+        approval: {
+          include: {
+            approver: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
       },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  static async approveRequest(requestId: string, approverUserId: string) {
+    return prisma.$transaction(async (tx) => {
+      const now = new Date();
+
+      await tx.purchaseRequest.update({
+        where: { id: requestId },
+        data: {
+          status: "APPROVED",
+        },
+      });
+
+      await tx.purchaseApproval.update({
+        where: { purchaseRequestId: requestId },
+        data: {
+          status: "APPROVED",
+          approverId: approverUserId,
+          approvedAt: now,
+        },
+      });
+
+      return tx.purchaseRequest.findUnique({
+        where: { id: requestId },
+        include: {
+          items: true,
+          requester: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          department: true,
+          approval: {
+            include: {
+              approver: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    });
+  }
+
+  static async rejectRequest(requestId: string, approverUserId: string, reason: string) {
+    return prisma.$transaction(async (tx) => {
+      const now = new Date();
+
+      await tx.purchaseRequest.update({
+        where: { id: requestId },
+        data: {
+          status: "REJECTED",
+        },
+      });
+
+      await tx.purchaseApproval.update({
+        where: { purchaseRequestId: requestId },
+        data: {
+          status: "REJECTED",
+          approverId: approverUserId,
+          rejectionReason: reason.trim(),
+          rejectedAt: now,
+        },
+      });
+
+      return tx.purchaseRequest.findUnique({
+        where: { id: requestId },
+        include: {
+          items: true,
+          requester: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          department: true,
+          approval: {
+            include: {
+              approver: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+        },
+      });
     });
   }
 }

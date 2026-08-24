@@ -1,12 +1,19 @@
 import { Response } from "express";
 import { AuthenticatedTenantRequest } from "../../shared/middleware/tenant.middleware";
-import { createPurchaseRequestSchema, updatePurchaseRequestSchema } from "./purchase-request.schemas";
+import {
+  createPurchaseRequestSchema,
+  updatePurchaseRequestSchema,
+  rejectPurchaseRequestSchema,
+} from "./purchase-request.schemas";
 import { CreatePurchaseRequestUseCase } from "./use-cases/create-purchase-request.use-case";
 import { GetPurchaseRequestsUseCase } from "./use-cases/get-purchase-requests.use-case";
 import { GetPurchaseRequestUseCase } from "./use-cases/get-purchase-request.use-case";
 import { UpdatePurchaseRequestUseCase } from "./use-cases/update-purchase-request.use-case";
 import { DeletePurchaseRequestUseCase } from "./use-cases/delete-purchase-request.use-case";
 import { SubmitPurchaseRequestUseCase } from "./use-cases/submit-purchase-request.use-case";
+import { GetPendingApprovalsUseCase } from "./use-cases/get-pending-approvals.use-case";
+import { ApprovePurchaseRequestUseCase } from "./use-cases/approve-purchase-request.use-case";
+import { RejectPurchaseRequestUseCase } from "./use-cases/reject-purchase-request.use-case";
 
 export class PurchaseRequestController {
   static async createRequest(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
@@ -194,6 +201,110 @@ export class PurchaseRequestController {
       res.status(statusCode).json({
         success: false,
         message: error.message || "Failed to submit purchase request",
+      });
+    }
+  }
+
+  // --- DAY 5 MANAGER APPROVAL WORKFLOW ---
+
+  static async getPendingApprovals(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
+    try {
+      const organizationId = req.tenant!.organizationId;
+      const managerUserId = req.user!.userId;
+      const role = req.tenant!.role;
+
+      const data = await GetPendingApprovalsUseCase.execute({
+        organizationId,
+        managerUserId,
+        role,
+      });
+
+      res.status(200).json({
+        success: true,
+        data,
+      });
+    } catch (error: any) {
+      const statusCode = error.message.includes("Forbidden") ? 403 : 400;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || "Failed to fetch pending approvals",
+      });
+    }
+  }
+
+  static async approveRequest(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
+    try {
+      const organizationId = req.tenant!.organizationId;
+      const approverUserId = req.user!.userId;
+      const role = req.tenant!.role;
+      const requestId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+      const result = await ApprovePurchaseRequestUseCase.execute({
+        requestId,
+        organizationId,
+        approverUserId,
+        role,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Purchase request approved successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      const statusCode =
+        error.message === "Purchase request not found"
+          ? 404
+          : error.message.includes("Forbidden") || error.message.includes("Self-approval forbidden")
+          ? 403
+          : 400;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || "Failed to approve purchase request",
+      });
+    }
+  }
+
+  static async rejectRequest(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
+    try {
+      const organizationId = req.tenant!.organizationId;
+      const approverUserId = req.user!.userId;
+      const role = req.tenant!.role;
+      const requestId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+
+      const validationResult = rejectPurchaseRequestSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: validationResult.error.flatten().fieldErrors,
+        });
+        return;
+      }
+
+      const result = await RejectPurchaseRequestUseCase.execute({
+        requestId,
+        organizationId,
+        approverUserId,
+        role,
+        input: validationResult.data,
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Purchase request rejected",
+        data: result,
+      });
+    } catch (error: any) {
+      const statusCode =
+        error.message === "Purchase request not found"
+          ? 404
+          : error.message.includes("Forbidden") || error.message.includes("Self-approval forbidden")
+          ? 403
+          : 400;
+      res.status(statusCode).json({
+        success: false,
+        message: error.message || "Failed to reject purchase request",
       });
     }
   }

@@ -17,6 +17,11 @@ export const createPurchaseRequestSchema = z.object({
 
 export const updatePurchaseRequestSchema = createPurchaseRequestSchema;
 
+export const rejectPurchaseRequestSchema = z.object({
+  reason: z.string().trim().min(1, "Rejection reason is required"),
+});
+
 export type CreatePurchaseRequestInput = z.infer<typeof createPurchaseRequestSchema>;
 export type UpdatePurchaseRequestInput = z.infer<typeof updatePurchaseRequestSchema>;
 export type PurchaseRequestItemInput = z.infer<typeof purchaseRequestItemSchema>;
+export type RejectPurchaseRequestInput = z.infer<typeof rejectPurchaseRequestSchema>;
