@@ -7,28 +7,30 @@ datasource db {
 }
 
 model User {
-  id          String               @id @default(uuid())
-  email       String               @unique
-  password    String
-  name        String
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  memberships OrganizationMember[]
+  id               String               @id @default(uuid())
+  email            String               @unique
+  password         String
+  name             String
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  memberships      OrganizationMember[]
+  purchaseRequests PurchaseRequest[]
 
   @@map("users")
 }
 
 model Organization {
-  id          String               @id @default(uuid())
-  name        String
-  slug        String               @unique
-  logoUrl     String?
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  members     OrganizationMember[]
-  departments Department[]
-  roles       Role[]
-  invitations Invitation[]
+  id               String               @id @default(uuid())
+  name             String
+  slug             String               @unique
+  logoUrl          String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  members          OrganizationMember[]
+  departments      Department[]
+  roles            Role[]
+  invitations      Invitation[]
+  purchaseRequests PurchaseRequest[]
 
   @@map("organizations")
 }
@@ -48,13 +50,14 @@ model Role {
 }
 
 model Department {
-  id             String               @id @default(uuid())
-  name           String
-  organizationId String
-  organization   Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
-  members        OrganizationMember[]
+  id               String               @id @default(uuid())
+  name             String
+  organizationId   String
+  organization     Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  members          OrganizationMember[]
+  purchaseRequests PurchaseRequest[]
 
   @@map("departments")
 }
@@ -93,4 +96,40 @@ model Invitation {
   createdAt      DateTime           @default(now())
 
   @@map("invitations")
+}
+
+model PurchaseRequest {
+  id             String                @id @default(uuid())
+  requestNumber  String                @unique
+  organizationId String
+  organization   Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  requesterId    String
+  requester      User                  @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+  departmentId   String?
+  department     Department?           @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  title          String
+  description    String?
+  justification  String?
+  status         String                @default("DRAFT")
+  estimatedTotal Float                 @default(0)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  items          PurchaseRequestItem[]
+
+  @@map("purchase_requests")
+}
+
+model PurchaseRequestItem {
+  id                 String          @id @default(uuid())
+  purchaseRequestId  String
+  purchaseRequest    PurchaseRequest @relation(fields: [purchaseRequestId], references: [id], onDelete: Cascade)
+  name               String
+  description        String?
+  quantity           Int
+  estimatedUnitPrice Float
+  estimatedTotal     Float
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@map("purchase_request_items")
 }

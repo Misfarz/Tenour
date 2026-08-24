@@ -4,6 +4,7 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
 import organizationRoutes from "./routes/organization.routes";
+import purchaseRequestRoutes from "./routes/purchase-request.routes";
 
 export const createApp = () => {
   const app = express();
@@ -27,6 +28,10 @@ export const createApp = () => {
   // Support both /organizations and /api/v1/organizations
   app.use("/organizations", organizationRoutes);
   app.use("/api/v1/organizations", organizationRoutes);
+
+  // Purchase Requests
+  app.use("/purchase-requests", purchaseRequestRoutes);
+  app.use("/api/v1/purchase-requests", purchaseRequestRoutes);
 
   app.get("/health", (_req, res) => {
     res.status(200).json({
