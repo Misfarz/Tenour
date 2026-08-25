@@ -7,13 +7,57 @@ import { VendorController } from "../../../modules/vendors/vendor.controller";
 
 const router = Router();
 
+// Public Vendor Invitation & Login Endpoints
+router.post("/accept-invitation", VendorController.acceptVendorInvitation);
+router.post("/login", VendorController.vendorLogin);
+
+// Protected Buyer Vendor Endpoints
 router.use(authenticate, tenantContext);
 
-// POST /vendors (Only ORG_ADMIN and PROCUREMENT)
+// List & Create
+router.get("/", VendorController.getVendors);
 router.post(
   "/",
   requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
   VendorController.createVendor
+);
+
+// Detail & Edit
+router.get("/:id", VendorController.getVendorById);
+router.patch(
+  "/:id",
+  requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
+  VendorController.updateVendor
+);
+router.patch(
+  "/:id/status",
+  requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
+  VendorController.updateVendorStatus
+);
+
+// Contacts
+router.get("/:id/contacts", VendorController.getContacts);
+router.post(
+  "/:id/contacts",
+  requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
+  VendorController.addContact
+);
+router.patch(
+  "/:id/contacts/:contactId",
+  requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
+  VendorController.updateContact
+);
+router.delete(
+  "/:id/contacts/:contactId",
+  requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
+  VendorController.deleteContact
+);
+
+// Invitations
+router.post(
+  "/:id/invite",
+  requireRole(BuyerRole.ORG_ADMIN, BuyerRole.PROCUREMENT),
+  VendorController.inviteVendor
 );
 
 export default router;

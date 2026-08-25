@@ -45,6 +45,26 @@ async function getTransporter(): Promise<nodemailer.Transporter | null> {
   return testTransporter;
 }
 
+export async function sendEmail(params: { to: string; subject: string; html: string }): Promise<void> {
+  try {
+    const transporter = await getTransporter();
+    if (!transporter) {
+      console.log(`[Email Utility] ✉️ Test Mode: Generic email constructed for ${params.to}`);
+      return;
+    }
+
+    const fromAddress = process.env.SMTP_FROM || `"Tenour Platform" <${process.env.SMTP_USER || "noreply@tenour.com"}>`;
+    await transporter.sendMail({
+      from: fromAddress,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+    });
+  } catch (error: any) {
+    console.error(`[Email Utility] ❌ Failed to send email to ${params.to}:`, error.message);
+  }
+}
+
 export async function sendInvitationEmail(params: SendInvitationEmailParams): Promise<string | null> {
   try {
     const transporter = await getTransporter();

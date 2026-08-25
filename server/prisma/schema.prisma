@@ -7,32 +7,34 @@ datasource db {
 }
 
 model User {
-  id               String               @id @default(uuid())
-  email            String               @unique
-  password         String
-  name             String
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  memberships      OrganizationMember[]
-  purchaseRequests PurchaseRequest[]
+  id                String               @id @default(uuid())
+  email             String               @unique
+  password          String
+  name              String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  memberships       OrganizationMember[]
+  purchaseRequests  PurchaseRequest[]
   purchaseApprovals PurchaseApproval[]
+  vendorUsers       VendorUser[]
 
   @@map("users")
 }
 
 model Organization {
-  id               String               @id @default(uuid())
-  name             String
-  slug             String               @unique
-  logoUrl          String?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  members          OrganizationMember[]
-  departments      Department[]
-  roles            Role[]
-  invitations      Invitation[]
-  purchaseRequests PurchaseRequest[]
-  buyerVendors     BuyerVendor[]
+  id                String               @id @default(uuid())
+  name              String
+  slug              String               @unique
+  logoUrl           String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  members           OrganizationMember[]
+  departments       Department[]
+  roles             Role[]
+  invitations       Invitation[]
+  purchaseRequests  PurchaseRequest[]
+  buyerVendors      BuyerVendor[]
+  vendorInvitations VendorInvitation[]
 
   @@map("organizations")
 }
@@ -153,9 +155,8 @@ model PurchaseApproval {
   @@map("purchase_approvals")
 }
 
-
 model Vendor {
-  id                 String         @id @default(uuid())
+  id                 String             @id @default(uuid())
   name               String
   legalName          String?
   email              String?
@@ -168,11 +169,13 @@ model Vendor {
   state              String?
   country            String?
   postalCode         String?
-  status             String         @default("PENDING") // PENDING, ACTIVE, INACTIVE
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
+  status             String             @default("PENDING")
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
   contacts           VendorContact[]
   buyerVendors       BuyerVendor[]
+  vendorUsers        VendorUser[]
+  vendorInvitations  VendorInvitation[]
 
   @@map("vendors")
 }
@@ -197,7 +200,7 @@ model BuyerVendor {
   buyerOrganization   Organization @relation(fields: [buyerOrganizationId], references: [id], onDelete: Cascade)
   vendorId            String
   vendor              Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  status              String       @default("ACTIVE") // PENDING, ACTIVE, INACTIVE
+  status              String       @default("ACTIVE")
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
@@ -205,4 +208,33 @@ model BuyerVendor {
   @@index([buyerOrganizationId])
   @@index([vendorId])
   @@map("buyer_vendors")
+}
+
+model VendorUser {
+  id        String   @id @default(uuid())
+  vendorId  String
+  vendor    Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("VENDOR_ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("vendor_users")
+}
+
+model VendorInvitation {
+  id                  String       @id @default(uuid())
+  token               String       @unique
+  buyerOrganizationId String
+  buyerOrganization   Organization @relation(fields: [buyerOrganizationId], references: [id], onDelete: Cascade)
+  vendorId            String
+  vendor              Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  email               String
+  name                String
+  expiresAt           DateTime
+  usedAt              DateTime?
+  createdAt           DateTime     @default(now())
+
+  @@map("vendor_invitations")
 }
