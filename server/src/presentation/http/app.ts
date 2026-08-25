@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.routes";
 import organizationRoutes from "./routes/organization.routes";
 import purchaseRequestRoutes from "./routes/purchase-request.routes";
+import vendorRoutes from "./routes/vendor.routes";
 
 export const createApp = () => {
   const app = express();
@@ -32,6 +33,10 @@ export const createApp = () => {
   // Purchase Requests
   app.use("/purchase-requests", purchaseRequestRoutes);
   app.use("/api/v1/purchase-requests", purchaseRequestRoutes);
+
+  // Vendors
+  app.use("/vendors", vendorRoutes);
+  app.use("/api/v1/vendors", vendorRoutes);
 
   app.get("/health", (_req, res) => {
     res.status(200).json({

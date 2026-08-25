@@ -32,6 +32,7 @@ model Organization {
   roles            Role[]
   invitations      Invitation[]
   purchaseRequests PurchaseRequest[]
+  buyerVendors     BuyerVendor[]
 
   @@map("organizations")
 }
@@ -150,4 +151,58 @@ model PurchaseApproval {
   updatedAt         DateTime        @updatedAt
 
   @@map("purchase_approvals")
+}
+
+
+model Vendor {
+  id                 String         @id @default(uuid())
+  name               String
+  legalName          String?
+  email              String?
+  phone              String?
+  website            String?
+  taxId              String?
+  registrationNumber String?
+  address            String?
+  city               String?
+  state              String?
+  country            String?
+  postalCode         String?
+  status             String         @default("PENDING") // PENDING, ACTIVE, INACTIVE
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  contacts           VendorContact[]
+  buyerVendors       BuyerVendor[]
+
+  @@map("vendors")
+}
+
+model VendorContact {
+  id          String   @id @default(uuid())
+  vendorId    String
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  name        String
+  email       String?
+  phone       String?
+  designation String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("vendor_contacts")
+}
+
+model BuyerVendor {
+  id                  String       @id @default(uuid())
+  buyerOrganizationId String
+  buyerOrganization   Organization @relation(fields: [buyerOrganizationId], references: [id], onDelete: Cascade)
+  vendorId            String
+  vendor              Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  status              String       @default("ACTIVE") // PENDING, ACTIVE, INACTIVE
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  @@unique([buyerOrganizationId, vendorId])
+  @@index([buyerOrganizationId])
+  @@index([vendorId])
+  @@map("buyer_vendors")
 }
