@@ -77,17 +77,35 @@ export class VendorRepository {
         vendor: {
           include: {
             contacts: true,
+            vendorInvitations: {
+              where: { buyerOrganizationId },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
           },
         },
       },
       orderBy: { createdAt: "desc" },
     });
 
-    return buyerVendors.map((bv) => ({
-      ...bv.vendor,
-      buyerVendorStatus: bv.status,
-      buyerOrganizationId: bv.buyerOrganizationId,
-    }));
+    return buyerVendors.map((bv) => {
+      const latestInvite = (bv.vendor as any).vendorInvitations?.[0];
+      return {
+        ...bv.vendor,
+        buyerVendorStatus: bv.status,
+        buyerOrganizationId: bv.buyerOrganizationId,
+        latestInvitation: latestInvite
+          ? {
+              id: latestInvite.id,
+              token: latestInvite.token,
+              email: latestInvite.email,
+              name: latestInvite.name,
+              usedAt: latestInvite.usedAt,
+              expiresAt: latestInvite.expiresAt,
+            }
+          : null,
+      };
+    });
   }
 
   static async findBuyerVendor(buyerOrganizationId: string, vendorId: string) {
@@ -102,6 +120,11 @@ export class VendorRepository {
         vendor: {
           include: {
             contacts: true,
+            vendorInvitations: {
+              where: { buyerOrganizationId },
+              orderBy: { createdAt: "desc" },
+              take: 1,
+            },
           },
         },
       },
@@ -109,10 +132,21 @@ export class VendorRepository {
 
     if (!bv) return null;
 
+    const latestInvite = (bv.vendor as any).vendorInvitations?.[0];
     return {
       ...bv.vendor,
       buyerVendorStatus: bv.status,
       buyerOrganizationId: bv.buyerOrganizationId,
+      latestInvitation: latestInvite
+        ? {
+            id: latestInvite.id,
+            token: latestInvite.token,
+            email: latestInvite.email,
+            name: latestInvite.name,
+            usedAt: latestInvite.usedAt,
+            expiresAt: latestInvite.expiresAt,
+          }
+        : null,
     };
   }
 

@@ -20,7 +20,19 @@ import {
   XCircle,
   Clock,
   ShieldCheck,
+  ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
+
+interface VendorInvitation {
+  id: string;
+  token: string;
+  email: string;
+  name: string;
+  usedAt?: string | null;
+  expiresAt: string;
+}
 
 interface Vendor {
   id: string;
@@ -33,6 +45,7 @@ interface Vendor {
   city?: string | null;
   country?: string | null;
   buyerVendorStatus: string;
+  latestInvitation?: VendorInvitation | null;
 }
 
 export default function BuyerVendorsPage() {
@@ -44,6 +57,14 @@ export default function BuyerVendorsPage() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
+  const handleCopyInviteLink = (token: string) => {
+    const link = `${window.location.origin}/vendor/accept-invitation?token=${token}`;
+    navigator.clipboard.writeText(link);
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(null), 2000);
+  };
 
   // Create Vendor Modal State
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -191,15 +212,27 @@ export default function BuyerVendorsPage() {
             </p>
           </div>
 
-          {canManageVendors && (
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition flex items-center gap-2 self-start sm:self-auto cursor-pointer"
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <Link
+              href="/vendor/login"
+              target="_blank"
+              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-200 transition flex items-center gap-1.5 cursor-pointer"
+              title="Open Vendor Portal Login (Dev Testing)"
             >
-              <Plus className="w-4 h-4" />
-              <span>Add Vendor</span>
-            </button>
-          )}
+              <ExternalLink className="w-3.5 h-3.5 text-[#2383E2]" />
+              <span>Vendor Portal Login</span>
+            </Link>
+
+            {canManageVendors && (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="px-4 py-2.5 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Vendor</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Filters & Search */}
@@ -255,6 +288,7 @@ export default function BuyerVendorsPage() {
                     <th className="py-3.5 px-6">Email / Phone</th>
                     <th className="py-3.5 px-6">Tax ID / City</th>
                     <th className="py-3.5 px-6">Relationship Status</th>
+                    <th className="py-3.5 px-6">Dev Invitation Link (Email)</th>
                     <th className="py-3.5 px-6 text-right">Action</th>
                   </tr>
                 </thead>
@@ -293,6 +327,40 @@ export default function BuyerVendorsPage() {
                             <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                             PENDING
                           </span>
+                        )}
+                      </td>
+                      <td className="py-4 px-6">
+                        {v.latestInvitation ? (
+                          <div className="flex flex-col gap-1 items-start">
+                            <div className="flex items-center gap-1.5">
+                              <Link
+                                href={`/vendor/accept-invitation?token=${v.latestInvitation.token}`}
+                                target="_blank"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 border border-blue-200 text-[#2383E2] font-semibold text-[11px] transition"
+                                title={`Invited: ${v.latestInvitation.email}`}
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                                <span>Accept Invite Link</span>
+                              </Link>
+
+                              <button
+                                onClick={() => handleCopyInviteLink(v.latestInvitation!.token)}
+                                className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition cursor-pointer"
+                                title="Copy invitation link"
+                              >
+                                {copiedToken === v.latestInvitation.token ? (
+                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-3.5 h-3.5" />
+                                )}
+                              </button>
+                            </div>
+                            <span className="text-[10px] text-slate-400 font-mono truncate max-w-[180px]">
+                              {v.latestInvitation.email} {v.latestInvitation.usedAt ? "(Accepted)" : "(Pending)"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-slate-400 font-medium italic">No invite sent</span>
                         )}
                       </td>
                       <td className="py-4 px-6 text-right">

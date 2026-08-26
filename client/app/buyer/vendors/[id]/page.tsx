@@ -22,6 +22,9 @@ import {
   XCircle,
   LogOut,
   Edit,
+  ExternalLink,
+  Copy,
+  Check,
 } from "lucide-react";
 
 interface VendorContact {
@@ -30,6 +33,15 @@ interface VendorContact {
   email?: string | null;
   phone?: string | null;
   designation?: string | null;
+}
+
+interface VendorInvitation {
+  id: string;
+  token: string;
+  email: string;
+  name: string;
+  usedAt?: string | null;
+  expiresAt: string;
 }
 
 interface VendorDetail {
@@ -48,6 +60,7 @@ interface VendorDetail {
   postalCode?: string | null;
   buyerVendorStatus: string;
   contacts: VendorContact[];
+  latestInvitation?: VendorInvitation | null;
 }
 
 export default function BuyerVendorDetailPage({
@@ -78,6 +91,15 @@ export default function BuyerVendorDetailPage({
   const [showInviteModal, setShowInviteModal] = useState<boolean>(false);
   const [inviteEmail, setInviteEmail] = useState<string>("");
   const [inviteName, setInviteName] = useState<string>("");
+  const [latestInviteToken, setLatestInviteToken] = useState<string | null>(null);
+  const [copiedToken, setCopiedToken] = useState<string | null>(null);
+
+  const handleCopyInviteLink = (token: string) => {
+    const link = `${window.location.origin}/vendor/accept-invitation?token=${token}`;
+    navigator.clipboard.writeText(link);
+    setCopiedToken(token);
+    setTimeout(() => setCopiedToken(null), 2000);
+  };
 
   const fetchVendorDetail = async () => {
     setLoading(true);
@@ -189,7 +211,7 @@ export default function BuyerVendorDetailPage({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await apiClient(`/vendors/${vendorId}/invite`, {
+      const res = await apiClient<{ token?: string }>(`/vendors/${vendorId}/invite`, {
         method: "POST",
         body: JSON.stringify({
           email: inviteEmail.trim(),
@@ -201,6 +223,9 @@ export default function BuyerVendorDetailPage({
         setShowInviteModal(false);
         setInviteEmail("");
         setInviteName("");
+        if (res.data?.token) {
+          setLatestInviteToken(res.data.token);
+        }
         setSuccess(`Vendor invitation sent successfully to ${inviteEmail}`);
       }
     } catch (err: any) {
@@ -273,9 +298,23 @@ export default function BuyerVendorDetailPage({
         )}
 
         {success && (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
-            <span>{success}</span>
-            <button onClick={() => setSuccess(null)} className="font-bold cursor-pointer">✕</button>
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <span>{success}</span>
+              <button onClick={() => setSuccess(null)} className="font-bold cursor-pointer">✕</button>
+            </div>
+            {latestInviteToken && (
+              <div className="mt-1 pt-2 border-t border-emerald-200/60 flex items-center justify-between text-[11px]">
+                <span className="font-semibold text-emerald-900">Dev Testing Shortcut:</span>
+                <Link
+                  href={`/vendor/accept-invitation?token=${latestInviteToken}`}
+                  target="_blank"
+                  className="font-bold underline text-[#2383E2] hover:text-[#1D72C9] flex items-center gap-1"
+                >
+                  Accept Invitation & Set Password Link <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
+            )}
           </div>
         )}
 
@@ -306,34 +345,46 @@ export default function BuyerVendorDetailPage({
               )}
             </div>
 
-            {canManage && (
-              <div className="flex items-center gap-2 self-start sm:self-auto">
-                <button
-                  onClick={() => setShowInviteModal(true)}
-                  className="px-3.5 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-                >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Invite Vendor Portal</span>
-                </button>
-                <button
-                  onClick={handleToggleStatus}
-                  disabled={submitting}
-                  className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
-                >
-                  {vendor.buyerVendorStatus === "ACTIVE" ? (
-                    <>
-                      <XCircle className="w-3.5 h-3.5 text-red-500" />
-                      <span>Deactivate</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Activate</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <Link
+                href="/vendor/login"
+                target="_blank"
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 border border-slate-200 transition cursor-pointer"
+                title="Open Vendor Portal Login (Dev Testing)"
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-[#2383E2]" />
+                <span>Vendor Portal Login</span>
+              </Link>
+
+              {canManage && (
+                <>
+                  <button
+                    onClick={() => setShowInviteModal(true)}
+                    className="px-3.5 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 shadow-sm transition cursor-pointer"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Invite Vendor Portal</span>
+                  </button>
+                  <button
+                    onClick={handleToggleStatus}
+                    disabled={submitting}
+                    className="px-3.5 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                  >
+                    {vendor.buyerVendorStatus === "ACTIVE" ? (
+                      <>
+                        <XCircle className="w-3.5 h-3.5 text-red-500" />
+                        <span>Deactivate</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Activate</span>
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Key Information Grid */}
@@ -360,6 +411,52 @@ export default function BuyerVendorDetailPage({
               </span>
             </div>
           </div>
+
+          {/* Dev Mode Invitation Link Banner */}
+          {vendor.latestInvitation && (
+            <div className="bg-blue-50/70 border border-blue-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-[#2383E2] text-xs">DEV: Email Invitation Link</span>
+                  {vendor.latestInvitation.usedAt ? (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      ✓ ACCEPTED
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                      PENDING ACCEPTANCE
+                    </span>
+                  )}
+                </div>
+                <p className="text-slate-600 text-[11px] mt-0.5">
+                  Sent to representative <strong className="text-slate-900">{vendor.latestInvitation.name}</strong> ({vendor.latestInvitation.email}).
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+                <Link
+                  href={`/vendor/accept-invitation?token=${vendor.latestInvitation.token}`}
+                  target="_blank"
+                  className="px-3 py-1.5 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs flex items-center gap-1.5 transition"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span>Open Invitation Link</span>
+                </Link>
+
+                <button
+                  onClick={() => handleCopyInviteLink(vendor.latestInvitation!.token)}
+                  className="p-1.5 rounded-lg bg-white border border-blue-200 text-slate-700 hover:bg-blue-50 transition cursor-pointer"
+                  title="Copy Link to Clipboard"
+                >
+                  {copiedToken === vendor.latestInvitation.token ? (
+                    <Check className="w-4 h-4 text-emerald-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-slate-600" />
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Contacts Section */}
           <div className="pt-6 border-t border-slate-100">
