@@ -23,7 +23,7 @@ export class VendorLoginUseCase {
       throw new Error("Forbidden: This user is not registered as a vendor administrator");
     }
 
-    const jwtSecret = process.env.JWT_SECRET || "default_jwt_secret_change_in_prod";
+    const jwtSecret = process.env.JWT_ACCESS_SECRET || "default-access-secret";
     const accessToken = jwt.sign(
       {
         userId: user.id,

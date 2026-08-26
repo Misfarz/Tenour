@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { apiClient } from "@/lib/api-client";
+import { BuyerNavbar } from "@/components/buyer-navbar";
 import {
   Building2,
   Plus,
@@ -152,41 +153,7 @@ export default function BuyerDepartmentsPage() {
   return (
     <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
       {/* Top Navbar */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-md bg-slate-950 flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
-                N
-              </div>
-              <span className="font-extrabold text-xl text-slate-950 tracking-tight">Tenour</span>
-            </Link>
-            <span className="text-slate-300">|</span>
-            <span className="text-xs font-semibold text-slate-600">{organization?.name}</span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <Link href="/buyer/dashboard" className="hover:text-slate-950 transition">Dashboard</Link>
-            {role === "ORG_ADMIN" && (
-              <Link href="/buyer/users" className="hover:text-slate-950 transition">User Management</Link>
-            )}
-            <Link href="/buyer/departments" className="text-[#2383E2] font-semibold">Departments</Link>
-            {role === "ORG_ADMIN" && (
-              <Link href="/buyer/settings" className="hover:text-slate-950 transition">Organization Settings</Link>
-            )}
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => logout()}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold text-slate-700 transition"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <BuyerNavbar activePath="/buyer/departments" />
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col gap-6">

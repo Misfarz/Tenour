@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes";
 import organizationRoutes from "./routes/organization.routes";
 import purchaseRequestRoutes from "./routes/purchase-request.routes";
 import vendorRoutes from "./routes/vendor.routes";
+import { buyerRfqRouter, vendorRfqRouter } from "./routes/rfq.routes";
 
 export const createApp = () => {
   const app = express();
@@ -37,6 +38,14 @@ export const createApp = () => {
   // Vendors
   app.use("/vendors", vendorRoutes);
   app.use("/api/v1/vendors", vendorRoutes);
+
+  // RFQs (Buyer)
+  app.use("/rfqs", buyerRfqRouter);
+  app.use("/api/v1/rfqs", buyerRfqRouter);
+
+  // RFQs (Vendor)
+  app.use("/vendor/rfqs", vendorRfqRouter);
+  app.use("/api/v1/vendor/rfqs", vendorRfqRouter);
 
   app.get("/health", (_req, res) => {
     res.status(200).json({

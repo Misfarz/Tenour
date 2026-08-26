@@ -94,14 +94,14 @@ export default function VendorDashboardPage() {
 
         {/* Feature Modules Overview Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm opacity-80">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#2383E2] flex items-center justify-center mb-3">
+          <Link href="/vendor/rfqs" className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm hover:border-[#2383E2] hover:shadow-md transition group">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#2383E2] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
               <FileText className="w-5 h-5" />
             </div>
-            <h3 className="font-bold text-sm text-slate-950">Pending RFQs</h3>
-            <p className="text-xs text-slate-400 mt-1">Day 7 Sourcing module</p>
-            <span className="mt-3 inline-block text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">0 Active</span>
-          </div>
+            <h3 className="font-bold text-sm text-slate-950 group-hover:text-[#2383E2] transition">Assigned RFQs</h3>
+            <p className="text-xs text-slate-400 mt-1">View Sourcing RFQs</p>
+            <span className="mt-3 inline-block text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Active RFQs</span>
+          </Link>
 
           <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm opacity-80">
             <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3">

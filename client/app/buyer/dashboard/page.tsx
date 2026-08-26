@@ -3,8 +3,9 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
-import { LogOut, Building2, ShieldCheck, User as UserIcon, Loader2, Users, FolderGit2, Settings, FileText, Plus, CheckCircle } from "lucide-react";
+import { LogOut, Building2, ShieldCheck, User as UserIcon, Loader2, Users, FolderGit2, Settings, FileText, Plus, CheckCircle, FileCode, Store } from "lucide-react";
 import Link from "next/link";
+import { BuyerNavbar } from "@/components/buyer-navbar";
 
 export default function BuyerDashboardPage() {
   const { user, organization, role, isAuthenticated, isLoading, logout } = useAuth();
@@ -40,55 +41,7 @@ export default function BuyerDashboardPage() {
   return (
     <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
       {/* Header / Navbar */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-md bg-slate-950 flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
-                N
-              </div>
-              <span className="font-extrabold text-xl text-slate-950 tracking-tight">
-                Tenour
-              </span>
-            </Link>
-            <span className="text-slate-300">|</span>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-[#EDF5FF] text-[#1D72C9] border border-[#D0E4FF]">
-              Buyer Workspace
-            </span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <Link href="/buyer/dashboard" className="text-[#2383E2] font-semibold">Dashboard</Link>
-            <Link href="/buyer/purchase-requests" className="hover:text-slate-950 transition">Purchase Requests</Link>
-            {displayRole === "MANAGER" && (
-              <Link href="/buyer/approvals" className="hover:text-slate-950 transition font-semibold text-[#1D72C9]">
-                Approvals
-              </Link>
-            )}
-            {displayRole === "ORG_ADMIN" && (
-              <>
-                <Link href="/buyer/users" className="hover:text-slate-950 transition">User Management</Link>
-                <Link href="/buyer/departments" className="hover:text-slate-950 transition">Departments</Link>
-                <Link href="/buyer/settings" className="hover:text-slate-950 transition">Organization Settings</Link>
-              </>
-            )}
-          </nav>
-
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 text-xs bg-slate-100 border border-slate-200 px-3 py-1.5 rounded-full text-slate-700 font-medium">
-              <UserIcon className="w-3.5 h-3.5 text-[#2383E2]" />
-              <span>{user.email}</span>
-            </div>
-            <button
-              onClick={() => logout()}
-              className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold text-slate-700 transition duration-200 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5 text-slate-500" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      <BuyerNavbar activePath="/buyer/dashboard" />
 
       {/* Main Dashboard Content */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-10 flex flex-col gap-8">
