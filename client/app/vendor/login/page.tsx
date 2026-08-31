@@ -94,11 +94,19 @@ export default function VendorLoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
-          Buyer Organization Member?{" "}
-          <Link href="/buyer/login" className="font-bold text-[#2383E2] hover:underline">
-            Buyer Workspace Login →
-          </Link>
+        <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col gap-2 text-center text-xs text-slate-500">
+          <p>
+            New Vendor Company?{" "}
+            <Link href="/vendor/register" className="font-extrabold text-[#2383E2] hover:underline">
+              Register Vendor Account →
+            </Link>
+          </p>
+          <p>
+            Buyer Organization Member?{" "}
+            <Link href="/buyer/login" className="font-bold text-slate-700 hover:underline">
+              Buyer Workspace Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>

@@ -287,5 +287,26 @@ describe("Day 6 Full Suite: Vendor Management, Contacts, Invitations & Vendor Po
       expect(res.body.data.vendor.id).toBe(dellVendorId);
       expect(res.body.data.user.role).toBe("VENDOR_ADMIN");
     });
+
+    it("Direct Vendor Self-Registration (POST /auth/vendor/register) -> 201 Created with accessToken", async () => {
+      const selfRegEmail = `self.reg.vendor.${Date.now()}@selfreg.com`;
+      const res = await request(app)
+        .post("/auth/vendor/register")
+        .send({
+          companyName: "Self Reg Innovations",
+          contactName: "Self Reg Contact",
+          email: selfRegEmail,
+          password: "SelfPassword123!",
+          phone: "+91 9988776655",
+          city: "Bengaluru",
+          country: "India",
+        })
+        .expect(201);
+
+      expect(res.body.success).toBe(true);
+      expect(res.body.data.accessToken).toBeDefined();
+      expect(res.body.data.vendor.name).toBe("Self Reg Innovations");
+      expect(res.body.data.user.role).toBe("VENDOR_ADMIN");
+    });
   });
 });

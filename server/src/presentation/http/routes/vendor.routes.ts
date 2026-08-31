@@ -7,9 +7,10 @@ import { VendorController } from "../../../modules/vendors/vendor.controller";
 
 const router = Router();
 
-// Public Vendor Invitation & Login Endpoints
+// Public Vendor Invitation, Registration & Login Endpoints
 router.post("/accept-invitation", VendorController.acceptVendorInvitation);
 router.post("/login", VendorController.vendorLogin);
+router.post("/register", VendorController.registerVendor);
 
 // Protected Buyer Vendor Endpoints
 router.use(authenticate, tenantContext);

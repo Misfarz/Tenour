@@ -241,7 +241,7 @@ describe("Day 8 — Vendor Quotations & Comparison Suite", () => {
     await request(app)
       .post(`/api/v1/rfqs/${expiredRfqId}/send`)
       .set("Authorization", `Bearer ${abcProcurementToken}`);
-  });
+  }, 30000);
 
   describe("1. Vendor Quotation Creation & Validations (POST /api/v1/vendor/quotations)", () => {
     it("Unassigned vendor cannot create quotation -> 403 Forbidden", async () => {

@@ -8,6 +8,7 @@ import {
   inviteVendorSchema,
   acceptVendorInvitationSchema,
   vendorLoginSchema,
+  registerVendorSchema,
 } from "./vendor.schemas";
 import { CreateVendorUseCase } from "./use-cases/create-vendor.use-case";
 import { GetVendorsUseCase } from "./use-cases/get-vendors.use-case";
@@ -18,6 +19,7 @@ import { VendorContactUseCases } from "./use-cases/vendor-contacts.use-cases";
 import { InviteVendorUseCase } from "./use-cases/invite-vendor.use-case";
 import { AcceptVendorInvitationUseCase } from "./use-cases/accept-vendor-invitation.use-case";
 import { VendorLoginUseCase } from "./use-cases/vendor-login.use-case";
+import { RegisterVendorUseCase } from "./use-cases/register-vendor.use-case";
 
 export class VendorController {
   static async createVendor(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
@@ -397,6 +399,34 @@ export class VendorController {
       res.status(statusCode).json({
         success: false,
         message: error.message || "Failed to log in vendor",
+      });
+    }
+  }
+
+  static async registerVendor(req: Request, res: Response): Promise<void> {
+    try {
+      const validationResult = registerVendorSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        res.status(400).json({
+          success: false,
+          message: "Validation failed",
+          errors: validationResult.error.flatten().fieldErrors,
+        });
+        return;
+      }
+
+      const result = await RegisterVendorUseCase.execute(validationResult.data);
+
+      res.status(201).json({
+        success: true,
+        message: "Vendor registered successfully",
+        data: result,
+      });
+    } catch (error: any) {
+      console.log("registerVendor catch error:", error?.message || error);
+      res.status(400).json({
+        success: false,
+        message: error.message || "Failed to register vendor account",
       });
     }
   }

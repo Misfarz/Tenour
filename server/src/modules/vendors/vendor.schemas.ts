@@ -43,6 +43,17 @@ export const vendorLoginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const registerVendorSchema = z.object({
+  companyName: z.string().trim().min(1, "Company name is required"),
+  contactName: z.string().trim().min(1, "Contact person name is required"),
+  email: z.string().trim().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  phone: z.string().trim().optional(),
+  address: z.string().trim().optional(),
+  city: z.string().trim().optional(),
+  country: z.string().trim().optional(),
+});
+
 export type CreateVendorInput = z.infer<typeof createVendorSchema>;
 export type UpdateVendorInput = z.infer<typeof updateVendorSchema>;
 export type UpdateVendorStatusInput = z.infer<typeof updateVendorStatusSchema>;
@@ -50,3 +61,4 @@ export type VendorContactInput = z.infer<typeof vendorContactSchema>;
 export type InviteVendorInput = z.infer<typeof inviteVendorSchema>;
 export type AcceptVendorInvitationInput = z.infer<typeof acceptVendorInvitationSchema>;
 export type VendorLoginInput = z.infer<typeof vendorLoginSchema>;
+export type RegisterVendorInput = z.infer<typeof registerVendorSchema>;

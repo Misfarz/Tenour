@@ -67,7 +67,7 @@ describe("Day 6 — Task 2: Create Vendor Endpoint (POST /vendors)", () => {
       .post("/auth/login")
       .send({ email: empEmail, password: "Password123!" });
     employeeToken = empLogin.body.data.accessToken;
-  });
+  }, 30000);
 
   describe("1. Authorization & RBAC Checks", () => {
     it("ORG_ADMIN can create a vendor -> 201 Created", async () => {

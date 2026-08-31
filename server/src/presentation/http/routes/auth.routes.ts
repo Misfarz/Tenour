@@ -15,8 +15,9 @@ router.get("/me", authenticate, AuthController.me);
 router.get("/invitations/verify", AuthController.verifyInvitation);
 router.post("/accept-invitation", AuthController.acceptInvitation);
 
-// Day 6 Vendor Authentication Routes
+// Day 6 & Direct Vendor Self-Registration Routes
 router.post("/vendor/accept-invitation", VendorController.acceptVendorInvitation);
 router.post("/vendor/login", VendorController.vendorLogin);
+router.post("/vendor/register", VendorController.registerVendor);
 
 export default router;

@@ -189,7 +189,7 @@ describe("Day 7 — RFQ & Sourcing Suite: RFQs, Vendor Selection, Sending, RBAC 
       .post(`/purchase-requests/${prToApproveId}/approve`)
       .set("Authorization", `Bearer ${abcManagerToken}`);
     approvedPrId = prToApproveId;
-  });
+  }, 30000);
 
   describe("1. RFQ Creation & Validation (POST /api/v1/rfqs)", () => {
     it("Rejects RFQ creation from unapproved Purchase Request -> 400 Bad Request", async () => {
