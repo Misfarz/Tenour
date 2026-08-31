@@ -1,4 +1,5 @@
 import { PurchaseRequestRepository } from "../purchase-request.repository";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class ApprovePurchaseRequestUseCase {
   static async execute(params: {
@@ -26,6 +27,17 @@ export class ApprovePurchaseRequestUseCase {
       throw new Error(`Cannot approve request in status ${request.status}. Only PENDING_APPROVAL requests can be approved.`);
     }
 
-    return PurchaseRequestRepository.approveRequest(requestId, approverUserId);
+    const approvedPr = await PurchaseRequestRepository.approveRequest(requestId, approverUserId);
+
+    // Notify requester
+    NotificationService.notifyPrApproved({
+      id: request.id,
+      requestNumber: request.requestNumber,
+      title: request.title,
+      requesterId: request.requesterId,
+      approverName: "Manager",
+    });
+
+    return approvedPr;
   }
 }

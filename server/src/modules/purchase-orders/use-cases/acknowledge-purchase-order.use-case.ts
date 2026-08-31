@@ -1,5 +1,6 @@
 import { PurchaseOrderRepository } from "../purchase-order.repository";
 import { formatPurchaseOrderResponse, isValidPoStatusTransition } from "../purchase-order.utils";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class AcknowledgePurchaseOrderUseCase {
   static async execute(vendorId: string, poId: string) {
@@ -23,6 +24,13 @@ export class AcknowledgePurchaseOrderUseCase {
     const acknowledged = await PurchaseOrderRepository.update(poId, {
       status: "ACKNOWLEDGED",
       acknowledgedAt: new Date(),
+    });
+
+    NotificationService.notifyPoAcknowledged({
+      id: po.id,
+      poNumber: po.poNumber,
+      vendorName: po.vendor?.name || "Vendor",
+      organizationId: po.organizationId,
     });
 
     return formatPurchaseOrderResponse(acknowledged);

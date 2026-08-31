@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
+import { NotificationBell } from "@/components/notification-bell";
 import {
   LayoutDashboard,
   FileText,
@@ -19,7 +20,9 @@ import {
   Menu,
   X,
   ChevronRight,
+  Bell,
 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 interface BuyerNavbarProps {
   activePath?: string;
@@ -28,9 +31,25 @@ interface BuyerNavbarProps {
 export function BuyerNavbar({ activePath }: BuyerNavbarProps) {
   const { user, organization, role, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
 
   const currentRole = typeof role === "string" ? role : (role as any)?.name || "ORG_ADMIN";
   const isRole = (...allowedRoles: string[]) => allowedRoles.includes(currentRole);
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      try {
+        const res = await apiClient<{ unreadCount: number }>("/notifications/buyer");
+        if (res.success && res.data) {
+          setUnreadCount(res.data.unreadCount || 0);
+        }
+      } catch (err) {}
+    };
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 15000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Close mobile menu on path change
   useEffect(() => {
@@ -46,6 +65,13 @@ export function BuyerNavbar({ activePath }: BuyerNavbarProps) {
           href: "/buyer/dashboard",
           icon: LayoutDashboard,
           show: true,
+        },
+        {
+          label: "Notifications",
+          href: "/buyer/notifications",
+          icon: Bell,
+          show: true,
+          badge: unreadCount > 0 ? unreadCount : undefined,
         },
       ],
     },
@@ -171,6 +197,11 @@ export function BuyerNavbar({ activePath }: BuyerNavbarProps) {
                       }`}
                     />
                     <span className="flex-1 truncate">{item.label}</span>
+                    {(item as any).badge !== undefined && (
+                      <span className="px-2 py-0.5 rounded-full bg-red-500 text-white font-mono text-[10px] font-extrabold animate-pulse">
+                        {(item as any).badge}
+                      </span>
+                    )}
                     {isActive && <ChevronRight className="w-3.5 h-3.5 opacity-70" />}
                   </Link>
                 );
@@ -212,7 +243,7 @@ export function BuyerNavbar({ activePath }: BuyerNavbarProps) {
           {renderNavLinks()}
         </div>
 
-        {/* Sidebar Footer User Profile */}
+        {/* Sidebar Footer User Profile & Notifications */}
         <div className="p-4 border-t border-neutral-800/80 bg-[#161616] flex items-center justify-between gap-2 font-sans">
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="w-8 h-8 rounded-full bg-white text-black font-bold text-xs flex items-center justify-center shrink-0">
@@ -251,10 +282,12 @@ export function BuyerNavbar({ activePath }: BuyerNavbarProps) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <NotificationBell type="BUYER" />
           <button
             onClick={() => logout()}
-            className="p-2 rounded-xl bg-[#242424] text-neutral-400 hover:text-white"
+            className="p-2 rounded-full bg-[#242424] text-neutral-400 hover:text-white transition cursor-pointer"
+            aria-label="Log out"
           >
             <LogOut className="w-4 h-4" />
           </button>

@@ -18,6 +18,8 @@ import {
   vendorPurchaseOrderRouter,
 } from "./routes/purchase-order.routes";
 
+import notificationRoutes from "./routes/notification.routes";
+
 export const createApp = () => {
   const app = express();
 
@@ -78,6 +80,10 @@ export const createApp = () => {
   // RFQs (Vendor)
   app.use("/vendor/rfqs", vendorRfqRouter);
   app.use("/api/v1/vendor/rfqs", vendorRfqRouter);
+
+  // Notifications
+  app.use("/notifications", notificationRoutes);
+  app.use("/api/v1/notifications", notificationRoutes);
 
   app.get("/health", (_req, res) => {
     res.status(200).json({

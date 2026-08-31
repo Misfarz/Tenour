@@ -2,6 +2,7 @@ import { QuotationRepository } from "../quotation.repository";
 import { formatQuotationResponse } from "../quotation.utils";
 import { BuyerRole } from "../../../shared/constants/roles";
 import { prisma } from "../../../infrastructure/database/prisma/prisma.client";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class SelectQuotationUseCase {
   static async execute(buyerOrganizationId: string, role: string, quotationId: string) {
@@ -46,6 +47,9 @@ export class SelectQuotationUseCase {
       quotationId,
       quotation.rfqId
     );
+
+    // Notify vendors
+    NotificationService.notifyQuotationSelected(quotation.rfqId, quotationId);
 
     return formatQuotationResponse(selected);
   }

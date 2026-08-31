@@ -1,6 +1,7 @@
 import { QuotationRepository } from "../quotation.repository";
 import { formatQuotationResponse } from "../quotation.utils";
 import { prisma } from "../../../infrastructure/database/prisma/prisma.client";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class SubmitQuotationUseCase {
   static async execute(vendorId: string, quotationId: string) {
@@ -63,6 +64,16 @@ export class SubmitQuotationUseCase {
     const submitted = await QuotationRepository.update(quotationId, {
       status: "SUBMITTED",
       submittedAt: new Date(),
+    });
+
+    NotificationService.notifyQuotationSubmitted({
+      id: quotation.id,
+      quotationNumber: quotation.quotationNumber,
+      vendorName: quotation.vendor?.name || "Vendor",
+      rfqId: rfq.id,
+      rfqNumber: rfq.rfqNumber,
+      rfqTitle: rfq.title,
+      organizationId: rfq.organizationId,
     });
 
     return formatQuotationResponse(submitted);

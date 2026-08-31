@@ -2,6 +2,7 @@ import { PurchaseOrderRepository } from "../purchase-order.repository";
 import { formatPurchaseOrderResponse, isValidPoStatusTransition } from "../purchase-order.utils";
 import { BuyerRole } from "../../../shared/constants/roles";
 import { prisma } from "../../../infrastructure/database/prisma/prisma.client";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class SendPurchaseOrderUseCase {
   static async execute(buyerOrganizationId: string, role: string, poId: string) {
@@ -38,6 +39,14 @@ export class SendPurchaseOrderUseCase {
     const sentPo = await PurchaseOrderRepository.update(poId, {
       status: "SENT",
       sentAt: new Date(),
+    });
+
+    NotificationService.notifyPoIssued({
+      id: po.id,
+      poNumber: po.poNumber,
+      vendorId: po.vendorId,
+      organizationName: po.organization?.name || "Buyer Organization",
+      totalAmount: Number(po.totalAmount),
     });
 
     return formatPurchaseOrderResponse(sentPo);

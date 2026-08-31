@@ -2,6 +2,7 @@ import { CancelPurchaseOrderInput } from "../purchase-order.schemas";
 import { PurchaseOrderRepository } from "../purchase-order.repository";
 import { formatPurchaseOrderResponse, isValidPoStatusTransition } from "../purchase-order.utils";
 import { BuyerRole } from "../../../shared/constants/roles";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class CancelPurchaseOrderUseCase {
   static async execute(
@@ -33,6 +34,14 @@ export class CancelPurchaseOrderUseCase {
       cancelReason: input.cancelReason,
       cancelledById,
       cancelledAt: new Date(),
+    });
+
+    NotificationService.notifyPoCancelled({
+      id: po.id,
+      poNumber: po.poNumber,
+      vendorId: po.vendorId,
+      organizationName: po.organization?.name || "Buyer Organization",
+      reason: input.cancelReason,
     });
 
     return formatPurchaseOrderResponse(cancelled);

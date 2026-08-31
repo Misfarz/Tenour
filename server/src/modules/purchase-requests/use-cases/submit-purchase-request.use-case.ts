@@ -1,4 +1,5 @@
 import { PurchaseRequestRepository } from "../purchase-request.repository";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class SubmitPurchaseRequestUseCase {
   static async execute(params: {
@@ -38,6 +39,18 @@ export class SubmitPurchaseRequestUseCase {
       }
     }
 
-    return PurchaseRequestRepository.submitRequest(requestId, organizationId);
+    const updatedRequest = await PurchaseRequestRepository.submitRequest(requestId, organizationId);
+
+    // Dispatch Notification asynchronously
+    NotificationService.notifyPrSubmitted({
+      id: request.id,
+      requestNumber: request.requestNumber,
+      title: request.title,
+      organizationId,
+      requesterId: userId,
+      requesterName: request.requester?.name || "A user",
+    });
+
+    return updatedRequest;
   }
 }

@@ -1,5 +1,6 @@
 import { RejectPurchaseRequestInput } from "../purchase-request.schemas";
 import { PurchaseRequestRepository } from "../purchase-request.repository";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class RejectPurchaseRequestUseCase {
   static async execute(params: {
@@ -32,6 +33,18 @@ export class RejectPurchaseRequestUseCase {
       throw new Error("Rejection reason is required");
     }
 
-    return PurchaseRequestRepository.rejectRequest(requestId, approverUserId, input.reason);
+    const rejectedPr = await PurchaseRequestRepository.rejectRequest(requestId, approverUserId, input.reason);
+
+    // Notify requester
+    NotificationService.notifyPrRejected({
+      id: request.id,
+      requestNumber: request.requestNumber,
+      title: request.title,
+      requesterId: request.requesterId,
+      rejectorName: "Manager",
+      reason: input.reason,
+    });
+
+    return rejectedPr;
   }
 }

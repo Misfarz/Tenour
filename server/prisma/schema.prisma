@@ -17,6 +17,7 @@ model User {
   purchaseRequests  PurchaseRequest[]
   purchaseApprovals PurchaseApproval[]
   vendorUsers       VendorUser[]
+  notifications     Notification[]
 
   @@map("users")
 }
@@ -37,6 +38,7 @@ model Organization {
   vendorInvitations VendorInvitation[]
   rfqs              Rfq[]
   purchaseOrders    PurchaseOrder[]
+  notifications     Notification[]
 
   @@map("organizations")
 }
@@ -183,6 +185,7 @@ model Vendor {
   rfqVendors         RfqVendor[]
   quotations         Quotation[]
   purchaseOrders     PurchaseOrder[]
+  notifications     Notification[]
 
   @@map("vendors")
 }
@@ -405,3 +408,26 @@ model PurchaseOrderItem {
 
   @@map("purchase_order_items")
 }
+
+model Notification {
+  id             String        @id @default(uuid())
+  recipientType  String        // "BUYER" or "VENDOR"
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vendorId       String?
+  vendor         Vendor?       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title          String
+  message        String
+  type           String
+  link           String?
+  read           Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  @@index([userId, read])
+  @@index([vendorId, read])
+  @@index([organizationId])
+  @@map("notifications")
+}
+

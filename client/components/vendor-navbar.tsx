@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { NotificationBell } from "@/components/notification-bell";
 import {
   FileText,
   FileSpreadsheet,
@@ -97,13 +98,14 @@ export function VendorNavbar({ activePath = "/vendor/dashboard" }: VendorNavbarP
           </nav>
         </div>
 
-        {/* Right: Vendor Info & Logout */}
+        {/* Right: Vendor Info & Notification & Logout */}
         <div className="flex items-center gap-3">
           {vendorInfo && (
             <span className="hidden sm:inline-block text-xs font-sans text-neutral-400 font-medium">
               {vendorInfo.name}
             </span>
           )}
+          <NotificationBell type="VENDOR" />
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 text-xs font-sans font-medium border border-neutral-700/60 transition cursor-pointer"

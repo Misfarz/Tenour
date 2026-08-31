@@ -1,6 +1,7 @@
 import { RejectPurchaseOrderInput } from "../purchase-order.schemas";
 import { PurchaseOrderRepository } from "../purchase-order.repository";
 import { formatPurchaseOrderResponse, isValidPoStatusTransition } from "../purchase-order.utils";
+import { NotificationService } from "../../notifications/notification.service";
 
 export class RejectPurchaseOrderUseCase {
   static async execute(vendorId: string, poId: string, input: RejectPurchaseOrderInput) {
@@ -29,6 +30,14 @@ export class RejectPurchaseOrderUseCase {
       status: "REJECTED",
       rejectionReason: input.rejectionReason,
       rejectedAt: new Date(),
+    });
+
+    NotificationService.notifyPoRejected({
+      id: po.id,
+      poNumber: po.poNumber,
+      vendorName: po.vendor?.name || "Vendor",
+      organizationId: po.organizationId,
+      reason: input.rejectionReason,
     });
 
     return formatPurchaseOrderResponse(rejected);

@@ -3,6 +3,7 @@ import { RfqRepository } from "../rfq.repository";
 import { PurchaseRequestRepository } from "../../purchase-requests/purchase-request.repository";
 import { VendorRepository } from "../../vendors/vendor.repository";
 import { BuyerRole } from "../../../shared/constants/roles";
+import { NotificationService } from "../../notifications/notification.service";
 
 import { prisma } from "../../../infrastructure/database/prisma/prisma.client";
 
@@ -56,10 +57,27 @@ export class CreateRfqUseCase {
       }
     }
 
-    return RfqRepository.createRfq({
+    const createdRfq = await RfqRepository.createRfq({
       organizationId: buyerOrganizationId,
       createdById,
       input,
     });
+
+    if (input.vendorIds && input.vendorIds.length > 0) {
+      // Find Organization name
+      const org = await prisma.organization.findUnique({
+        where: { id: buyerOrganizationId },
+        select: { name: true },
+      });
+
+      NotificationService.notifyRfqIssued({
+        id: createdRfq.id,
+        rfqNumber: createdRfq.rfqNumber,
+        title: createdRfq.title,
+        organizationName: org?.name || "Buyer Organization",
+      }, input.vendorIds);
+    }
+
+    return createdRfq;
   }
 }
