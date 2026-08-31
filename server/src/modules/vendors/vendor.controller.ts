@@ -20,6 +20,7 @@ import { InviteVendorUseCase } from "./use-cases/invite-vendor.use-case";
 import { AcceptVendorInvitationUseCase } from "./use-cases/accept-vendor-invitation.use-case";
 import { VendorLoginUseCase } from "./use-cases/vendor-login.use-case";
 import { RegisterVendorUseCase } from "./use-cases/register-vendor.use-case";
+import { VendorRepository } from "./vendor.repository";
 
 export class VendorController {
   static async createVendor(req: AuthenticatedTenantRequest, res: Response): Promise<void> {
@@ -61,11 +62,13 @@ export class VendorController {
     try {
       const buyerOrganizationId = req.tenant!.organizationId;
       const search = req.query.search as string | undefined;
+      const sourceFilter = req.query.source as "ALL" | "PLATFORM_REGISTERED" | "MANUALLY_ADDED" | undefined;
       const statusFilter = req.query.status as string | undefined;
 
       const data = await GetVendorsUseCase.execute({
         buyerOrganizationId,
         search,
+        sourceFilter,
         statusFilter,
       });
 
@@ -428,6 +431,31 @@ export class VendorController {
         success: false,
         message: error.message || "Failed to register vendor account",
       });
+    }
+  }
+
+  static async getVendorInvitationByToken(req: Request, res: Response): Promise<void> {
+    try {
+      const token = Array.isArray(req.params.token) ? req.params.token[0] : req.params.token;
+      const invitation = await VendorRepository.findVendorInvitationByToken(token);
+      if (!invitation) {
+        res.status(404).json({ success: false, message: "Invitation token not found" });
+        return;
+      }
+      res.status(200).json({
+        success: true,
+        data: {
+          id: invitation.id,
+          name: invitation.name,
+          email: invitation.email,
+          vendorName: invitation.vendor.name,
+          buyerOrganizationName: invitation.buyerOrganization.name,
+          usedAt: invitation.usedAt,
+          expiresAt: invitation.expiresAt,
+        },
+      });
+    } catch (error: any) {
+      res.status(400).json({ success: false, message: error.message || "Failed to fetch invitation details" });
     }
   }
 }

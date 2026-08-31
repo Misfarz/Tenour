@@ -9,8 +9,10 @@ const router = Router();
 
 // Public Vendor Invitation, Registration & Login Endpoints
 router.post("/accept-invitation", VendorController.acceptVendorInvitation);
+router.get("/invitation/:token", VendorController.getVendorInvitationByToken);
 router.post("/login", VendorController.vendorLogin);
 router.post("/register", VendorController.registerVendor);
+router.post("/auth/register", VendorController.registerVendor);
 
 // Protected Buyer Vendor Endpoints
 router.use(authenticate, tenantContext);

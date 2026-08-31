@@ -41,6 +41,7 @@ export class RfqController {
         data: result,
       });
     } catch (error: any) {
+      console.error("CreateRfq Error:", error);
       const statusCode = error.message.includes("Forbidden")
         ? 403
         : error.message.includes("not found")

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../../shared/middleware/auth.middleware";
-import { tenantContext } from "../../../shared/middleware/tenant.middleware";
+import { tenantContext, vendorContext } from "../../../shared/middleware/tenant.middleware";
 import { requireRole } from "../../../shared/middleware/rbac.middleware";
 import { BuyerRole } from "../../../shared/constants/roles";
 import { QuotationController } from "../../../modules/quotations/quotation.controller";
@@ -8,7 +8,7 @@ import { QuotationController } from "../../../modules/quotations/quotation.contr
 // Vendor Quotation Router
 export const vendorQuotationRouter = Router();
 
-vendorQuotationRouter.use(authenticate);
+vendorQuotationRouter.use(authenticate, vendorContext);
 
 vendorQuotationRouter.post("/", QuotationController.createVendorQuotation);
 vendorQuotationRouter.get("/", QuotationController.getVendorQuotations);

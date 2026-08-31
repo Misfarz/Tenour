@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
@@ -16,6 +16,27 @@ function VendorAcceptInvitationContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  interface InvitationDetails {
+    name: string;
+    email: string;
+    vendorName: string;
+    buyerOrganizationName: string;
+  }
+
+  const [invitation, setInvitation] = useState<InvitationDetails | null>(null);
+
+  useEffect(() => {
+    if (token) {
+      apiClient<InvitationDetails>(`/vendors/invitation/${token}`)
+        .then((res) => {
+          if (res.success && res.data) {
+            setInvitation(res.data);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,6 +115,23 @@ function VendorAcceptInvitationContent() {
         <p className="text-slate-500 text-xs text-center mb-6">
           Set a secure password to activate your Tenour Vendor Portal account.
         </p>
+
+        {invitation && (
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-xs space-y-2">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+              <span className="text-slate-400 font-bold text-[10px] uppercase">Vendor Company</span>
+              <span className="font-extrabold text-slate-900">{invitation.vendorName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 font-bold text-[10px] uppercase">Representative</span>
+              <span className="font-semibold text-slate-900">{invitation.name}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 font-bold text-[10px] uppercase">Registered Email</span>
+              <span className="font-mono font-semibold text-[#2383E2]">{invitation.email}</span>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs mb-4">

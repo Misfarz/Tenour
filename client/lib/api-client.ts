@@ -17,6 +17,21 @@ export async function apiClient<T = any>(
     "Content-Type": "application/json",
   };
 
+  const cleanEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+
+  let token: string | null = null;
+  if (typeof window !== "undefined") {
+    if (cleanEndpoint.startsWith("/vendor")) {
+      token = localStorage.getItem("vendorToken") || localStorage.getItem("accessToken");
+    } else {
+      token = localStorage.getItem("accessToken");
+    }
+  }
+
+  if (token) {
+    defaultHeaders["Authorization"] = `Bearer ${token}`;
+  }
+
   const response = await fetch(url, {
     ...options,
     headers: {

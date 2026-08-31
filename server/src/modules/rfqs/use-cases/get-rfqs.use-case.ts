@@ -6,6 +6,10 @@ export class GetRfqsUseCase {
     search?: string;
     statusFilter?: string;
   }) {
-    return RfqRepository.findRfqsByOrganization(params);
+    return RfqRepository.findRfqsByOrganization({
+      organizationId: params.buyerOrganizationId,
+      search: params.search,
+      statusFilter: params.statusFilter,
+    });
   }
 }

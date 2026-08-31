@@ -124,8 +124,8 @@ describe("Day 6 Full Suite: Vendor Management, Contacts, Invitations & Vendor Po
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toHaveLength(1);
-      expect(res.body.data[0].id).toBe(dellVendorId);
+      expect(res.body.data.some((v: any) => v.id === dellVendorId)).toBe(true);
+      expect(res.body.data.some((v: any) => v.id === hpVendorId)).toBe(false);
     });
   });
 

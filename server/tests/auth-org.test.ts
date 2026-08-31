@@ -62,7 +62,8 @@ describe("Day 2: Database + Authentication Flow", () => {
 
     const cookies = res.headers["set-cookie"];
     expect(cookies).toBeDefined();
-    const refreshCookie = (cookies as string[]).find((c) => c.startsWith("refreshToken="));
+    const cookieList = Array.isArray(cookies) ? cookies : typeof cookies === "string" ? [cookies] : [];
+    const refreshCookie = cookieList.find((c: string) => c.startsWith("refreshToken="));
     expect(refreshCookie).toBeDefined();
     refreshTokenCookie = refreshCookie!;
   });

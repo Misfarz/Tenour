@@ -67,3 +67,63 @@ export const tenantContext = async (
     });
   }
 };
+
+export interface VendorContext {
+  vendorId: string;
+  vendorName: string;
+  role: string;
+}
+
+export interface AuthenticatedVendorRequest extends AuthenticatedRequest {
+  vendorContext?: VendorContext;
+}
+
+export const vendorContext = async (
+  req: AuthenticatedVendorRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?.userId) {
+      res.status(401).json({ success: false, message: "Unauthorized: Missing authentication" });
+      return;
+    }
+
+    let vendorId = (req.user as any)?.vendorId;
+    let vendorName = "";
+    let role = (req.user as any)?.role || "VENDOR_ADMIN";
+
+    if (!vendorId) {
+      const vendorUser = await prisma.vendorUser.findUnique({
+        where: { userId: req.user.userId },
+        include: { vendor: true },
+      });
+
+      if (!vendorUser) {
+        res.status(403).json({
+          success: false,
+          message: "Forbidden: Vendor authentication required",
+        });
+        return;
+      }
+
+      vendorId = vendorUser.vendorId;
+      vendorName = vendorUser.vendor.name;
+      role = vendorUser.role;
+    }
+
+    (req.user as any).vendorId = vendorId;
+    req.vendorContext = {
+      vendorId,
+      vendorName,
+      role,
+    };
+
+    next();
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Internal server error resolving vendor context",
+    });
+  }
+};

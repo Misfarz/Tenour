@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../../shared/middleware/auth.middleware";
-import { tenantContext } from "../../../shared/middleware/tenant.middleware";
+import { tenantContext, vendorContext } from "../../../shared/middleware/tenant.middleware";
 import { requireRole } from "../../../shared/middleware/rbac.middleware";
 import { BuyerRole } from "../../../shared/constants/roles";
 import { RfqController } from "../../../modules/rfqs/rfq.controller";
@@ -49,7 +49,7 @@ buyerRfqRouter.post(
 // Vendor RFQ Router
 export const vendorRfqRouter = Router();
 
-vendorRfqRouter.use(authenticate);
+vendorRfqRouter.use(authenticate, vendorContext);
 
 vendorRfqRouter.get("/", RfqController.getVendorRfqs);
 vendorRfqRouter.get("/:id", RfqController.getVendorRfqById);

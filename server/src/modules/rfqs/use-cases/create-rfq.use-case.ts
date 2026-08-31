@@ -4,6 +4,8 @@ import { PurchaseRequestRepository } from "../../purchase-requests/purchase-requ
 import { VendorRepository } from "../../vendors/vendor.repository";
 import { BuyerRole } from "../../../shared/constants/roles";
 
+import { prisma } from "../../../infrastructure/database/prisma/prisma.client";
+
 export class CreateRfqUseCase {
   static async execute(params: {
     buyerOrganizationId: string;
@@ -29,15 +31,27 @@ export class CreateRfqUseCase {
       throw new Error("Cannot create RFQ: Purchase Request must be APPROVED");
     }
 
-    // 3. Verify selected vendors belong to current org and are ACTIVE
+    // 3. Verify selected vendors exist and are ACTIVE
     if (input.vendorIds && input.vendorIds.length > 0) {
       for (const vendorId of input.vendorIds) {
-        const buyerVendor = await VendorRepository.findBuyerVendor(buyerOrganizationId, vendorId);
+        let buyerVendor: any = await VendorRepository.findBuyerVendor(buyerOrganizationId, vendorId);
         if (!buyerVendor) {
-          throw new Error(`Vendor ${vendorId} not found in your organization`);
+          // Check if vendor exists as PLATFORM_REGISTERED
+          const platformVendor = await prisma.vendor.findUnique({
+            where: { id: vendorId },
+          });
+          if (!platformVendor || platformVendor.source !== "PLATFORM_REGISTERED") {
+            throw new Error(`Vendor ${vendorId} not found in your organization`);
+          }
+          if (platformVendor.status !== "ACTIVE") {
+            throw new Error(`Cannot select vendor ${platformVendor.name}: Vendor is not ACTIVE`);
+          }
+          // Automatically link platform vendor to buyer organization
+          buyerVendor = await VendorRepository.linkBuyerVendor(buyerOrganizationId, vendorId);
         }
+
         if (buyerVendor.buyerVendorStatus !== "ACTIVE") {
-          throw new Error(`Cannot select vendor ${buyerVendor.name}: Vendor relationship is not ACTIVE`);
+          throw new Error(`Cannot select vendor ${buyerVendor.name}: Vendor is not ACTIVE`);
         }
       }
     }

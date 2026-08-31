@@ -37,6 +37,15 @@ export class RegisterVendorUseCase {
             city: city || null,
             country: country || null,
             status: "ACTIVE",
+            source: "PLATFORM_REGISTERED",
+          },
+        });
+      } else {
+        vendor = await tx.vendor.update({
+          where: { id: vendor.id },
+          data: {
+            source: "PLATFORM_REGISTERED",
+            status: "ACTIVE",
           },
         });
       }
@@ -98,6 +107,8 @@ export class RegisterVendorUseCase {
         name: result.vendor.name,
         email: result.vendor.email,
         status: result.vendor.status,
+        source: result.vendor.source,
+        hasVendorPortal: true,
       },
     };
   }

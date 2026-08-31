@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authenticate } from "../../../shared/middleware/auth.middleware";
-import { tenantContext } from "../../../shared/middleware/tenant.middleware";
+import { tenantContext, vendorContext } from "../../../shared/middleware/tenant.middleware";
 import { requireRole } from "../../../shared/middleware/rbac.middleware";
 import { BuyerRole } from "../../../shared/constants/roles";
 import { PurchaseOrderController } from "../../../modules/purchase-orders/purchase-order.controller";
@@ -49,7 +49,7 @@ buyerPurchaseOrderRouter.post(
 // Vendor Purchase Order Router
 export const vendorPurchaseOrderRouter = Router();
 
-vendorPurchaseOrderRouter.use(authenticate);
+vendorPurchaseOrderRouter.use(authenticate, vendorContext);
 
 vendorPurchaseOrderRouter.get("/", PurchaseOrderController.getVendorPurchaseOrders);
 vendorPurchaseOrderRouter.get("/:id", PurchaseOrderController.getVendorPurchaseOrderById);

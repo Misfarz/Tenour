@@ -19,6 +19,12 @@ export class CreateVendorUseCase {
       throw new Error("Vendor name is required");
     }
 
+    // Check for duplicate active PLATFORM_REGISTERED vendor
+    const existingPlatformVendor = await VendorRepository.findByEmailOrName(input.email, input.name);
+    if (existingPlatformVendor) {
+      return VendorRepository.linkBuyerVendor(buyerOrganizationId, existingPlatformVendor.id);
+    }
+
     return VendorRepository.createVendorWithBuyer({
       buyerOrganizationId,
       input,

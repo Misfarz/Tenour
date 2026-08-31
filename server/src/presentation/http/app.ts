@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes";
 import organizationRoutes from "./routes/organization.routes";
 import purchaseRequestRoutes from "./routes/purchase-request.routes";
 import vendorRoutes from "./routes/vendor.routes";
+import { VendorController } from "../../modules/vendors/vendor.controller";
 import { buyerRfqRouter, vendorRfqRouter } from "./routes/rfq.routes";
 import {
   vendorQuotationRouter,
@@ -35,6 +36,8 @@ export const createApp = () => {
   // Support both /auth and /api/v1/auth
   app.use("/auth", authRoutes);
   app.use("/api/v1/auth", authRoutes);
+  app.post("/vendor/auth/register", VendorController.registerVendor);
+  app.post("/api/v1/vendor/auth/register", VendorController.registerVendor);
 
   // Support both /organizations and /api/v1/organizations
   app.use("/organizations", organizationRoutes);

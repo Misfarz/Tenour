@@ -173,6 +173,7 @@ model Vendor {
   country            String?
   postalCode         String?
   status             String             @default("PENDING")
+  source             String             @default("MANUALLY_ADDED")
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   contacts           VendorContact[]

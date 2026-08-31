@@ -2,10 +2,18 @@ import { prisma } from "../../infrastructure/database/prisma/prisma.client";
 import { CreateRfqInput, UpdateRfqInput } from "./rfq.schemas";
 
 export class RfqRepository {
-  static async generateRfqNumber(): Promise<string> {
-    const count = await prisma.rfq.count();
-    const sequence = (count + 1).toString().padStart(4, "0");
-    return `RFQ-${sequence}`;
+  static async generateRfqNumber(tx?: any): Promise<string> {
+    const db = tx || prisma;
+    const count = await db.rfq.count();
+    let seq = count + 1;
+    let rfqNumber = `RFQ-${seq.toString().padStart(4, "0")}`;
+    let exists = await db.rfq.findUnique({ where: { rfqNumber } });
+    while (exists) {
+      seq++;
+      rfqNumber = `RFQ-${seq.toString().padStart(4, "0")}`;
+      exists = await db.rfq.findUnique({ where: { rfqNumber } });
+    }
+    return rfqNumber;
   }
 
   static async createRfq(params: {
@@ -14,9 +22,9 @@ export class RfqRepository {
     input: CreateRfqInput;
   }) {
     const { organizationId, createdById, input } = params;
-    const rfqNumber = await this.generateRfqNumber();
 
     return prisma.$transaction(async (tx) => {
+      const rfqNumber = await this.generateRfqNumber(tx);
       const rfq = await tx.rfq.create({
         data: {
           rfqNumber,
