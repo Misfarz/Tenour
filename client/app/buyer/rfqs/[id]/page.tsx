@@ -235,11 +235,20 @@ export default function BuyerRfqDetailPage({
 
             {canManage && (
               <div className="flex items-center gap-2 self-start sm:self-auto">
+                {(rfq.status === "OPEN" || rfq.status === "CLOSED") && (
+                  <Link
+                    href={`/buyer/rfqs/${rfq.id}/compare`}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition"
+                  >
+                    <FileText className="w-4 h-4" />
+                    <span>Compare Quotations</span>
+                  </Link>
+                )}
                 {rfq.status === "DRAFT" && (
                   <button
                     onClick={handleSendRfq}
                     disabled={submitting}
-                    className="px-4 py-2.5 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-xl text-xs font-semibold flex items-center gap-2 shadow-sm transition cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-bold text-xs shadow-sm transition cursor-pointer disabled:opacity-50"
                   >
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     <span>Send RFQ to Vendors</span>

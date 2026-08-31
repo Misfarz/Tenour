@@ -49,6 +49,16 @@ export function BuyerNavbar({ activePath }: BuyerNavbarProps) {
       show: isRole("ORG_ADMIN", "PROCUREMENT", "FINANCE"),
     },
     {
+      label: "Quotations",
+      href: "/buyer/quotations",
+      show: isRole("ORG_ADMIN", "PROCUREMENT"),
+    },
+    {
+      label: "Purchase Orders",
+      href: "/buyer/purchase-orders",
+      show: isRole("ORG_ADMIN", "PROCUREMENT"),
+    },
+    {
       label: "User Management",
       href: "/buyer/users",
       show: isRole("ORG_ADMIN"),

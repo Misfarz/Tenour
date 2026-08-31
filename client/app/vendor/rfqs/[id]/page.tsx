@@ -123,27 +123,48 @@ export default function VendorRfqDetailPage({
         )}
 
         {/* Info Banner */}
-        <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center gap-2.5">
-          <Info className="w-4 h-4 text-[#2383E2] flex-shrink-0" />
-          <span>
-            This RFQ is issued by <strong>{rfq.buyer.name}</strong>. Review the requirements and specifications below. Quotation submission will open in Day 8.
-          </span>
+        <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2.5">
+            <Info className="w-4 h-4 text-[#2383E2] flex-shrink-0" />
+            <span>
+              This RFQ is issued by <strong>{rfq.buyer.name}</strong>. Submit your quotation and pricing terms before the deadline.
+            </span>
+          </div>
+          {rfq.status === "OPEN" && (
+            <Link
+              href={`/vendor/quotations/new?rfqId=${rfq.id}`}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-bold text-xs shadow-sm transition whitespace-nowrap"
+            >
+              <span>Create Quotation</span>
+            </Link>
+          )}
         </div>
 
         {/* RFQ Card */}
         <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6">
-          <div className="border-b border-slate-100 pb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-xs font-mono font-extrabold text-[#2383E2] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
-                {rfq.rfqNumber}
-              </span>
-              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                {rfq.status}
-              </span>
+          <div className="border-b border-slate-100 pb-6 flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-xs font-mono font-extrabold text-[#2383E2] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
+                  {rfq.rfqNumber}
+                </span>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {rfq.status}
+                </span>
+              </div>
+
+              <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight">{rfq.title}</h1>
+              {rfq.description && <p className="text-xs text-slate-600 mt-1 font-medium">{rfq.description}</p>}
             </div>
 
-            <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight">{rfq.title}</h1>
-            {rfq.description && <p className="text-xs text-slate-600 mt-1 font-medium">{rfq.description}</p>}
+            {rfq.status === "OPEN" && (
+              <Link
+                href={`/vendor/quotations/new?rfqId=${rfq.id}`}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-bold text-xs shadow-md transition"
+              >
+                <span>Create Quotation</span>
+              </Link>
+            )}
           </div>
 
           {/* Details Metadata Grid */}
