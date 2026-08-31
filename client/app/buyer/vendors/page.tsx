@@ -11,19 +11,10 @@ import {
   Plus,
   Search,
   Filter,
-  LogOut,
   Loader2,
   Eye,
-  Phone,
-  Mail,
-  MapPin,
-  CheckCircle2,
-  XCircle,
-  Clock,
   ShieldCheck,
   ExternalLink,
-  Copy,
-  Check,
 } from "lucide-react";
 
 interface VendorInvitation {
@@ -52,7 +43,7 @@ interface Vendor {
 }
 
 export default function BuyerVendorsPage() {
-  const { user, organization, role, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { user, organization, role, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   const [vendors, setVendors] = useState<Vendor[]>([]);
@@ -61,14 +52,8 @@ export default function BuyerVendorsPage() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [sourceFilter, setSourceFilter] = useState<"ALL" | "PLATFORM_REGISTERED" | "MANUALLY_ADDED">("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
-  const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
-  const handleCopyInviteLink = (token: string) => {
-    const link = `${window.location.origin}/vendor/accept-invitation?token=${token}`;
-    navigator.clipboard.writeText(link);
-    setCopiedToken(token);
-    setTimeout(() => setCopiedToken(null), 2000);
-  };
+  const displayRole = typeof role === "string" ? role : (role as any)?.name || "ORG_ADMIN";
 
   // Create Vendor Modal State
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -159,10 +144,10 @@ export default function BuyerVendorsPage() {
 
   if (authLoading || (loading && vendors.length === 0)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600 font-sans">
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading vendor directory...</span>
+      <div className="min-h-screen flex items-center justify-center bg-[#161616] text-white font-sans">
+        <div className="flex items-center gap-3 bg-[#1e1e1e] border border-neutral-800 px-6 py-4 rounded-2xl shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <span className="text-xs font-mono text-neutral-400">Loading vendor directory...</span>
         </div>
       </div>
     );
@@ -170,39 +155,45 @@ export default function BuyerVendorsPage() {
 
   if (!isAuthenticated || !user) return null;
 
-  const canManageVendors = role === "ORG_ADMIN" || role === "PROCUREMENT";
+  const canManageVendors = displayRole === "ORG_ADMIN" || displayRole === "PROCUREMENT";
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col font-sans selection:bg-white selection:text-black">
       {/* Navbar */}
       <BuyerNavbar activePath="/buyer/vendors" />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col gap-6">
-        {/* Banner */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        {/* Banner Container */}
+        <div className="bg-[#1e1e1e] p-6 sm:p-8 rounded-3xl border border-neutral-800/80 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">Vendor Management</h1>
-            <p className="text-slate-500 text-xs mt-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] font-mono font-extrabold uppercase tracking-widest mb-3">
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Supplier Ecosystem</span>
+            </div>
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-tight">
+              Vendor Directory
+            </h1>
+            <p className="text-neutral-400 text-xs sm:text-sm mt-1.5 font-sans">
               Directory of qualified suppliers, vendor relationships, and contact contacts for {organization?.name}.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
+          <div className="flex items-center gap-3 self-start sm:self-auto font-sans">
             <Link
               href="/vendor/login"
               target="_blank"
-              className="px-3.5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs border border-slate-200 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] border border-neutral-700/60 text-neutral-200 font-medium text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer"
               title="Open Vendor Portal Login (Dev Testing)"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-[#2383E2]" />
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
               <span>Vendor Portal Login</span>
             </Link>
 
             {canManageVendors && (
               <button
                 onClick={() => setShowAddModal(true)}
-                className="px-4 py-2.5 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition flex items-center gap-2 cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-md transition flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Vendor</span>
@@ -211,37 +202,37 @@ export default function BuyerVendorsPage() {
           </div>
         </div>
 
-        {/* Source Filter Tabs & Search Bar */}
-        <div className="flex flex-col gap-4 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+        {/* Source Filter Tabs & Search Bar Container */}
+        <div className="flex flex-col gap-4 bg-[#1e1e1e] p-4 rounded-3xl border border-neutral-800/80 shadow-xl font-sans">
           {/* Source Tabs */}
-          <div className="flex items-center gap-2 border-b border-slate-100 pb-3 overflow-x-auto">
+          <div className="flex items-center gap-2 border-b border-neutral-800 pb-3 overflow-x-auto">
             <button
               onClick={() => setSourceFilter("ALL")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap ${
                 sourceFilter === "ALL"
-                  ? "bg-[#2383E2] text-white shadow-sm"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-white text-black font-semibold shadow-sm"
+                  : "bg-[#141414] text-neutral-400 hover:text-white border border-neutral-800"
               }`}
             >
               All Vendors
             </button>
             <button
               onClick={() => setSourceFilter("PLATFORM_REGISTERED")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 sourceFilter === "PLATFORM_REGISTERED"
-                  ? "bg-indigo-600 text-white shadow-sm"
-                  : "bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                  ? "bg-indigo-500/20 text-indigo-300 border border-indigo-400/40 font-semibold"
+                  : "bg-[#141414] text-neutral-400 hover:text-white border border-neutral-800"
               }`}
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
               <span>Platform Registered</span>
             </button>
             <button
               onClick={() => setSourceFilter("MANUALLY_ADDED")}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                 sourceFilter === "MANUALLY_ADDED"
-                  ? "bg-slate-800 text-white shadow-sm"
-                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200"
+                  ? "bg-neutral-700 text-white font-semibold"
+                  : "bg-[#141414] text-neutral-400 hover:text-white border border-neutral-800"
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
@@ -251,22 +242,22 @@ export default function BuyerVendorsPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-80">
-              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3.5 top-3 text-neutral-500" />
               <input
                 type="text"
                 placeholder="Search vendors by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-[#2383E2]"
+                className="w-full pl-10 pr-4 py-2 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
               />
             </form>
 
             <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
-              <Filter className="w-4 h-4 text-slate-400" />
+              <Filter className="w-3.5 h-3.5 text-neutral-500" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none cursor-pointer"
+                className="px-3 py-2 bg-[#141414] border border-neutral-800 rounded-2xl text-xs font-semibold text-white focus:outline-none focus:border-neutral-500 cursor-pointer"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">ACTIVE</option>
@@ -279,84 +270,84 @@ export default function BuyerVendorsPage() {
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center justify-between font-sans">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="font-bold cursor-pointer">✕</button>
           </div>
         )}
 
         {/* Vendors Table */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl shadow-2xl overflow-hidden font-sans">
           {vendors.length === 0 ? (
-            <div className="p-12 text-center text-slate-500">
-              <Building2 className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-              <h3 className="font-bold text-slate-800 text-sm mb-1">No Vendors Found</h3>
-              <p className="text-xs text-slate-500">Try adjusting search query or source filters.</p>
+            <div className="p-12 text-center text-neutral-400">
+              <Building2 className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
+              <h3 className="font-serif text-lg text-white mb-1">No Vendors Found</h3>
+              <p className="text-xs text-neutral-400">Try adjusting search query or source filters.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-6">Vendor Name</th>
-                    <th className="py-3.5 px-6">Source / Type</th>
-                    <th className="py-3.5 px-6">Email / Phone</th>
-                    <th className="py-3.5 px-6">Tax ID / City</th>
-                    <th className="py-3.5 px-6">Status</th>
-                    <th className="py-3.5 px-6 text-right">Action</th>
+                  <tr className="bg-[#181818] border-b border-neutral-800/80 text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-widest">
+                    <th className="py-4 px-6">Vendor Name</th>
+                    <th className="py-4 px-6">Source / Type</th>
+                    <th className="py-4 px-6">Email / Phone</th>
+                    <th className="py-4 px-6">Tax ID / City</th>
+                    <th className="py-4 px-6">Status</th>
+                    <th className="py-4 px-6 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 text-xs">
+                <tbody className="divide-y divide-neutral-800/60 text-xs">
                   {vendors.map((v) => (
-                    <tr key={v.id} className="hover:bg-slate-50/60 transition">
+                    <tr key={v.id} className="hover:bg-[#242424] transition">
                       <td className="py-4 px-6">
-                        <Link href={`/buyer/vendors/${v.id}`} className="font-bold text-slate-950 hover:text-[#2383E2] transition">
+                        <Link href={`/buyer/vendors/${v.id}`} className="font-semibold text-white hover:text-blue-400 transition">
                           {v.name}
                         </Link>
-                        {v.legalName && <div className="text-[11px] text-slate-400">{v.legalName}</div>}
+                        {v.legalName && <div className="text-[11px] text-neutral-500">{v.legalName}</div>}
                       </td>
                       <td className="py-4 px-6">
                         {v.source === "PLATFORM_REGISTERED" ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-[10px] tracking-wide">
-                            <ShieldCheck className="w-3 h-3 text-indigo-600" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono font-bold text-[10px] tracking-wide">
+                            <ShieldCheck className="w-3 h-3 text-indigo-400" />
                             PLATFORM REGISTERED
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 font-medium text-[10px]">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#282828] border border-neutral-700/60 text-neutral-400 font-mono text-[10px]">
                             MANUALLY ADDED
                           </span>
                         )}
                         {v.hasVendorPortal && (
-                          <div className="text-[10px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <div className="text-[10px] font-mono font-bold text-emerald-400 mt-1 flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                             Portal Active
                           </div>
                         )}
                       </td>
                       <td className="py-4 px-6">
-                        <div className="text-slate-800 font-medium">{v.email || "—"}</div>
-                        <div className="text-[11px] text-slate-400">{v.phone || "—"}</div>
+                        <div className="text-neutral-200 font-medium">{v.email || "—"}</div>
+                        <div className="text-[11px] text-neutral-500">{v.phone || "—"}</div>
                       </td>
                       <td className="py-4 px-6">
-                        <div className="font-mono text-slate-700">{v.taxId || "—"}</div>
-                        <div className="text-[11px] text-slate-400">{v.city ? `${v.city}, ${v.country || ''}` : "—"}</div>
+                        <div className="font-mono text-neutral-300">{v.taxId || "—"}</div>
+                        <div className="text-[11px] text-neutral-500">{v.city ? `${v.city}, ${v.country || ''}` : "—"}</div>
                       </td>
                       <td className="py-4 px-6">
                         {v.buyerVendorStatus === "ACTIVE" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-[11px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono font-bold text-[10px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                             ACTIVE
                           </span>
                         )}
                         {v.buyerVendorStatus === "INACTIVE" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-300 text-slate-600 font-semibold text-[11px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#282828] border border-neutral-700/60 text-neutral-400 font-mono font-bold text-[10px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
                             INACTIVE
                           </span>
                         )}
                         {v.buyerVendorStatus === "PENDING" && (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-semibold text-[11px]">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono font-bold text-[10px]">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
                             PENDING
                           </span>
                         )}
@@ -364,7 +355,7 @@ export default function BuyerVendorsPage() {
                       <td className="py-4 px-6 text-right">
                         <Link
                           href={`/buyer/vendors/${v.id}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-semibold text-xs transition"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#242424] hover:bg-[#2e2e2e] border border-neutral-700/60 text-neutral-200 font-semibold text-xs transition"
                         >
                           <Eye className="w-3.5 h-3.5" />
                           <span>View Details</span>
@@ -381,109 +372,109 @@ export default function BuyerVendorsPage() {
 
       {/* Add Vendor Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-lg w-full shadow-xl">
-            <h3 className="font-extrabold text-lg text-slate-950 mb-1">Add New Vendor</h3>
-            <p className="text-xs text-slate-500 mb-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl font-sans">
+            <h3 className="font-serif text-xl font-normal text-white mb-1">Add New Vendor</h3>
+            <p className="text-xs text-neutral-400 mb-5">
               Enter supplier details to add them to {organization?.name}&apos;s vendor catalog.
             </p>
 
-            <form onSubmit={handleCreateVendor} className="space-y-4 text-xs">
+            <form onSubmit={handleCreateVendor} className="space-y-4 text-xs font-sans">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Vendor Name *</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Vendor Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Dell Technologies"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-[#2383E2]"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Legal Name</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Legal Name</label>
                   <input
                     type="text"
                     placeholder="e.g. Dell India Pvt Ltd"
                     value={formLegalName}
                     onChange={(e) => setFormLegalName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Tax ID / GSTIN</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Tax ID / GSTIN</label>
                   <input
                     type="text"
                     placeholder="e.g. GSTIN12345"
                     value={formTaxId}
                     onChange={(e) => setFormTaxId(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Email</label>
                   <input
                     type="email"
                     placeholder="sales@dell.com"
                     value={formEmail}
                     onChange={(e) => setFormEmail(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Phone</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Phone</label>
                   <input
                     type="text"
                     placeholder="+91 9876543210"
                     value={formPhone}
                     onChange={(e) => setFormPhone(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">City</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">City</label>
                   <input
                     type="text"
                     placeholder="Bangalore"
                     value={formCity}
                     onChange={(e) => setFormCity(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Country</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Country</label>
                   <input
                     type="text"
                     placeholder="India"
                     value={formCountry}
                     onChange={(e) => setFormCountry(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-5 border-t border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold"
+                  className="px-5 py-2.5 bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 rounded-full font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer"
+                  className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black rounded-full font-semibold flex items-center gap-1.5 cursor-pointer shadow-md"
                 >
-                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Create Vendor"}
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : "Create Vendor"}
                 </button>
               </div>
             </form>

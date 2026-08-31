@@ -471,40 +471,40 @@ export default function BuyerRfqComparePage({
 
       {/* Winner Confirmation Modal */}
       {modalOpen && selectedWinner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 flex flex-col gap-4">
-            <div className="flex items-center gap-3 text-amber-600">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 font-sans">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl flex flex-col gap-4">
+            <div className="flex items-center gap-3 text-amber-400">
               <Award className="w-6 h-6 flex-shrink-0" />
-              <h3 className="text-lg font-black text-slate-950 tracking-tight">Confirm Winner Selection</h3>
+              <h3 className="font-serif text-xl font-normal text-white">Confirm Winner Selection</h3>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to select <strong>{selectedWinner.vendor.name}</strong> as the winning vendor for this RFQ?
+            <p className="text-xs text-neutral-300 leading-relaxed font-sans">
+              Are you sure you want to select <strong className="text-white">{selectedWinner.vendor.name}</strong> as the winning vendor for this RFQ?
             </p>
 
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-1.5 text-xs">
+            <div className="bg-[#141414] p-4 rounded-2xl border border-neutral-800 space-y-2 text-xs font-sans">
               <div className="flex justify-between">
-                <span className="text-slate-500">Quotation #:</span>
-                <span className="font-bold text-slate-900">{selectedWinner.quotationNumber}</span>
+                <span className="text-neutral-500 font-mono text-[11px]">Quotation #:</span>
+                <span className="font-mono font-bold text-white">{selectedWinner.quotationNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Winning Amount:</span>
-                <span className="font-extrabold text-slate-950 text-sm">₹{selectedWinner.totalAmount.toLocaleString("en-IN")}</span>
+                <span className="text-neutral-500 font-mono text-[11px]">Winning Amount:</span>
+                <span className="font-mono font-bold text-emerald-400 text-sm">₹{selectedWinner.totalAmount.toLocaleString("en-IN")}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Delivery:</span>
-                <span className="font-semibold text-slate-800">{selectedWinner.deliveryDays} Days</span>
+                <span className="text-neutral-500 font-mono text-[11px]">Delivery Time:</span>
+                <span className="font-semibold text-neutral-300">{selectedWinner.deliveryDays} Days</span>
               </div>
             </div>
 
-            <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-lg font-medium">
+            <p className="text-[11px] text-amber-400 bg-amber-500/10 border border-amber-500/30 p-3 rounded-2xl font-sans">
               Note: This action will atomically set <strong>{selectedWinner.vendor.name}</strong> to <strong>SELECTED</strong> and automatically reject all other competing vendor quotations.
             </p>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
               <button
                 onClick={() => setModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 text-xs font-medium transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -512,9 +512,9 @@ export default function BuyerRfqComparePage({
               <button
                 onClick={handleSelectWinnerConfirm}
                 disabled={!!selectingId}
-                className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                className="px-6 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-black text-xs font-semibold shadow-md transition cursor-pointer flex items-center gap-2 disabled:opacity-50"
               >
-                {selectingId ? <Loader2 className="w-4 h-4 animate-spin" /> : <Award className="w-4 h-4" />}
+                {selectingId ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <Award className="w-4 h-4" />}
                 <span>Confirm & Select Winner</span>
               </button>
             </div>

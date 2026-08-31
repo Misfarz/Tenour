@@ -11,8 +11,8 @@ export class RejectPurchaseRequestUseCase {
   }) {
     const { requestId, organizationId, approverUserId, role, input } = params;
 
-    if (role !== "MANAGER") {
-      throw new Error("Forbidden: Only managers can reject purchase requests");
+    if (role !== "MANAGER" && role !== "ORG_ADMIN") {
+      throw new Error("Forbidden: Only managers and organization admins can reject purchase requests");
     }
 
     const request = await PurchaseRequestRepository.findRequestByIdAndOrg(requestId, organizationId);

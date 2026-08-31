@@ -10,15 +10,16 @@ export const requireRole = (...allowedRoles: (string | string[])[]) => {
       return;
     }
 
-    if (!roles.includes(req.tenant.role)) {
-      res.status(403).json({
-        success: false,
-        message: "Forbidden: Insufficient permissions",
-      });
+    // ORG_ADMIN automatically has full access across all role endpoints
+    if (req.tenant.role === "ORG_ADMIN" || roles.includes(req.tenant.role)) {
+      next();
       return;
     }
 
-    next();
+    res.status(403).json({
+      success: false,
+      message: "Forbidden: Insufficient permissions",
+    });
   };
 };
 
@@ -26,6 +27,12 @@ export const requirePermission = (permission: string) => {
   return (req: AuthenticatedTenantRequest, res: Response, next: NextFunction): void => {
     if (!req.tenant) {
       res.status(401).json({ success: false, message: "Unauthorized: Missing tenant context" });
+      return;
+    }
+
+    // ORG_ADMIN automatically has full permissions everywhere across the system
+    if (req.tenant.role === "ORG_ADMIN") {
+      next();
       return;
     }
 

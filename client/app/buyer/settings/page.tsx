@@ -12,8 +12,7 @@ import {
   Loader2,
   Lock,
   ArrowLeft,
-  LogOut,
-  ShieldCheck,
+  Settings,
 } from "lucide-react";
 
 interface OrgSettings {
@@ -25,7 +24,7 @@ interface OrgSettings {
 }
 
 export default function BuyerSettingsPage() {
-  const { user, organization, role, isAuthenticated, isLoading: authLoading, logout, checkAuth } = useAuth();
+  const { user, organization, role, isAuthenticated, isLoading: authLoading, checkAuth } = useAuth();
   const router = useRouter();
 
   const [settings, setSettings] = useState<OrgSettings | null>(null);
@@ -35,6 +34,8 @@ export default function BuyerSettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const displayRole = typeof role === "string" ? role : (role as any)?.name || "ORG_ADMIN";
 
   const fetchSettings = async () => {
     setLoadingSettings(true);
@@ -55,18 +56,18 @@ export default function BuyerSettingsPage() {
     if (!authLoading) {
       if (!isAuthenticated) {
         router.push("/buyer/login");
-      } else if (organization && role === "ORG_ADMIN") {
+      } else if (organization && displayRole === "ORG_ADMIN") {
         fetchSettings();
       }
     }
-  }, [authLoading, isAuthenticated, organization, role, router]);
+  }, [authLoading, isAuthenticated, organization, displayRole, router]);
 
-  if (authLoading || (loadingSettings && role === "ORG_ADMIN")) {
+  if (authLoading || (loadingSettings && displayRole === "ORG_ADMIN")) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600">
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading settings...</span>
+      <div className="min-h-screen flex items-center justify-center bg-[#161616] text-white font-sans">
+        <div className="flex items-center gap-3 bg-[#1e1e1e] border border-neutral-800 px-6 py-4 rounded-2xl shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <span className="text-xs font-mono text-neutral-400">Loading settings...</span>
         </div>
       </div>
     );
@@ -77,20 +78,20 @@ export default function BuyerSettingsPage() {
   }
 
   // 403 Forbidden Screen if non-admin user
-  if (role !== "ORG_ADMIN") {
+  if (displayRole !== "ORG_ADMIN") {
     return (
-      <div className="min-h-screen bg-[#FAFBFD] flex flex-col items-center justify-center p-6 text-slate-900 font-sans">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4 border border-red-100">
+      <div className="min-h-screen bg-[#161616] flex flex-col items-center justify-center p-6 text-white font-sans">
+        <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-[#282828] text-red-400 flex items-center justify-center mx-auto mb-4 border border-neutral-700/60">
             <Lock className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-950 mb-2">403 — Access Denied</h1>
-          <p className="text-slate-600 text-xs leading-relaxed mb-6">
-            Only users with the <span className="font-semibold text-slate-900">ORG_ADMIN</span> role can manage organization settings. Your current role is <span className="font-semibold text-[#2383E2]">{role || "Member"}</span>.
+          <h1 className="font-serif text-2xl font-normal text-white mb-2">403 — Access Denied</h1>
+          <p className="text-neutral-400 text-xs leading-relaxed mb-6 font-sans">
+            Only users with the <span className="font-semibold text-white">ORG_ADMIN</span> role can manage organization settings. Your current role is <span className="font-mono text-blue-400">{displayRole}</span>.
           </p>
           <Link
             href="/buyer/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-neutral-200 font-semibold text-xs transition font-sans"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Dashboard</span>
@@ -125,75 +126,75 @@ export default function BuyerSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col font-sans selection:bg-white selection:text-black">
       {/* Top Navbar */}
       <BuyerNavbar activePath="/buyer/settings" />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10 flex flex-col gap-6">
-        {/* Banner */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDF5FF] border border-[#D0E4FF] text-[#1D72C9] text-xs font-semibold mb-2">
-            <Building2 className="w-3.5 h-3.5" />
-            <span>Organization Settings</span>
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        {/* Banner Container */}
+        <div className="bg-[#1e1e1e] p-6 sm:p-8 rounded-3xl border border-neutral-800/80 shadow-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-extrabold uppercase tracking-widest mb-3">
+            <Settings className="w-3.5 h-3.5" />
+            <span>Organization Profile</span>
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-tight">
             Organization Configuration
           </h1>
-          <p className="text-slate-500 text-xs mt-1">
-            Manage profile settings for {organization?.name}.
+          <p className="text-neutral-400 text-xs sm:text-sm mt-1.5 font-sans">
+            Manage profile settings and workspace configurations for {organization?.name}.
           </p>
         </div>
 
         {/* Alerts */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center justify-between font-sans">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="font-bold cursor-pointer">✕</button>
           </div>
         )}
 
         {success && (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between font-sans">
             <span>{success}</span>
             <button onClick={() => setSuccess(null)} className="font-bold cursor-pointer">✕</button>
           </div>
         )}
 
         {/* Settings Form */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-          <form onSubmit={handleUpdateSettings} className="space-y-6 max-w-xl text-xs">
+        <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 shadow-2xl font-sans">
+          <form onSubmit={handleUpdateSettings} className="space-y-6 max-w-xl text-xs font-sans">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1.5">Organization Name</label>
+              <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-2">Organization Legal Name</label>
               <input
                 type="text"
                 required
                 value={orgName}
                 onChange={(e) => setOrgName(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-[#2383E2] transition"
+                className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white focus:outline-none focus:border-neutral-500 transition"
               />
             </div>
 
             {settings && (
-              <div className="grid grid-cols-2 gap-4 text-xs bg-slate-50 border border-slate-200 p-4 rounded-xl">
+              <div className="grid grid-cols-2 gap-4 text-xs bg-[#141414] border border-neutral-800 p-5 rounded-2xl">
                 <div>
-                  <span className="text-slate-400 block mb-1">Organization Slug</span>
-                  <span className="font-mono font-semibold text-slate-800">{settings.slug}</span>
+                  <span className="text-neutral-500 text-[10px] font-mono uppercase block mb-1">Organization Slug</span>
+                  <span className="font-mono font-semibold text-white">{settings.slug}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block mb-1">Organization ID</span>
-                  <span className="font-mono font-semibold text-slate-800 truncate block">{settings.id}</span>
+                  <span className="text-neutral-500 text-[10px] font-mono uppercase block mb-1">Organization ID</span>
+                  <span className="font-mono font-semibold text-neutral-300 truncate block">{settings.id}</span>
                 </div>
               </div>
             )}
 
-            <div className="pt-4 border-t border-slate-100">
+            <div className="pt-4 border-t border-neutral-800">
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-5 py-2.5 bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold rounded-lg shadow-sm transition flex items-center gap-2 cursor-pointer"
+                className="px-6 py-3 bg-white hover:bg-neutral-200 text-black font-semibold rounded-full shadow-md transition flex items-center gap-2 cursor-pointer font-sans text-xs"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : <Save className="w-4 h-4" />}
                 <span>Save Organization Settings</span>
               </button>
             </div>

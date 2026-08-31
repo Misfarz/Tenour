@@ -7,14 +7,10 @@ import { useAuth } from "@/context/auth-context";
 import { apiClient } from "@/lib/api-client";
 import { BuyerNavbar } from "@/components/buyer-navbar";
 import {
-  FileText,
+  FileSpreadsheet,
   Loader2,
   Eye,
-  Calendar,
   Building2,
-  CheckCircle2,
-  XCircle,
-  Filter,
   Layers,
 } from "lucide-react";
 
@@ -57,6 +53,8 @@ export default function BuyerQuotationsDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>("ALL");
 
+  const displayRole = typeof role === "string" ? role : (role as any)?.name || "ORG_ADMIN";
+
   const fetchQuotations = async () => {
     setLoading(true);
     setError(null);
@@ -77,35 +75,35 @@ export default function BuyerQuotationsDashboard() {
     if (!authLoading) {
       if (!isAuthenticated) {
         router.push("/buyer/login");
-      } else if (role !== "ORG_ADMIN" && role !== "PROCUREMENT") {
+      } else if (displayRole !== "ORG_ADMIN" && displayRole !== "PROCUREMENT") {
         router.push("/buyer/dashboard");
       } else {
         fetchQuotations();
       }
     }
-  }, [authLoading, isAuthenticated, role, router, selectedStatus]);
+  }, [authLoading, isAuthenticated, displayRole, router, selectedStatus]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "SUBMITTED":
-        return "bg-blue-50 text-blue-700 border-blue-200";
+        return "bg-blue-500/10 text-blue-400 border-blue-500/30 font-mono";
       case "UNDER_REVIEW":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-amber-500/10 text-amber-400 border-amber-500/30 font-mono";
       case "SELECTED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-300 font-extrabold";
+        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-mono font-bold";
       case "REJECTED":
-        return "bg-red-50 text-red-700 border-red-200";
+        return "bg-red-500/10 text-red-400 border-red-500/30 font-mono";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-[#282828] text-neutral-400 border-neutral-700/60 font-mono";
     }
   };
 
   if (authLoading || (loading && quotations.length === 0)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600 font-sans">
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading received quotations...</span>
+      <div className="min-h-screen flex items-center justify-center bg-[#161616] text-white font-sans">
+        <div className="flex items-center gap-3 bg-[#1e1e1e] border border-neutral-800 px-6 py-4 rounded-2xl shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <span className="text-xs font-mono text-neutral-400">Loading received quotations...</span>
         </div>
       </div>
     );
@@ -114,23 +112,29 @@ export default function BuyerQuotationsDashboard() {
   if (!isAuthenticated || !user) return null;
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col font-sans selection:bg-white selection:text-black">
       {/* Buyer Header Navbar */}
       <BuyerNavbar activePath="/buyer/quotations" />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-6 py-10 flex flex-col gap-6">
-        {/* Banner */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        {/* Banner Container */}
+        <div className="bg-[#1e1e1e] p-6 sm:p-8 rounded-3xl border border-neutral-800/80 shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">Received Vendor Quotations</h1>
-            <p className="text-slate-500 text-xs mt-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 text-[10px] font-mono font-extrabold uppercase tracking-widest mb-3">
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Bid Proposals</span>
+            </div>
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-tight">
+              Received Vendor Quotations
+            </h1>
+            <p className="text-neutral-400 text-xs sm:text-sm mt-1.5 font-sans">
               Review and compare proposals submitted by vendors for your organization's RFQs.
             </p>
           </div>
           <Link
             href="/buyer/rfqs"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] border border-neutral-700/60 text-white font-semibold text-xs shadow-md transition font-sans"
           >
             <span>View All RFQs</span>
           </Link>
@@ -138,22 +142,22 @@ export default function BuyerQuotationsDashboard() {
 
         {/* Error Notification */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center justify-between font-sans">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="font-bold cursor-pointer">✕</button>
           </div>
         )}
 
         {/* Filter Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-sans">
           {["ALL", "SUBMITTED", "SELECTED", "REJECTED"].map((status) => (
             <button
               key={status}
               onClick={() => setSelectedStatus(status)}
-              className={`px-4 py-2 rounded-xl font-bold border transition cursor-pointer ${
+              className={`px-4 py-2 rounded-full font-medium transition cursor-pointer ${
                 selectedStatus === status
-                  ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                  : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                  ? "bg-white text-black font-semibold shadow-sm"
+                  : "bg-[#1e1e1e] text-neutral-400 border border-neutral-800 hover:text-white hover:bg-[#242424]"
               }`}
             >
               {status === "ALL" ? "All Quotations" : status}
@@ -163,72 +167,72 @@ export default function BuyerQuotationsDashboard() {
 
         {/* Quotation Cards Grid */}
         {quotations.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 shadow-sm">
-            <FileText className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-            <h3 className="font-bold text-slate-800 text-sm mb-1">No Received Quotations</h3>
-            <p className="text-xs text-slate-500">No submitted vendor quotations were found for your organization.</p>
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-12 text-center text-neutral-400 shadow-2xl font-sans">
+            <FileSpreadsheet className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
+            <h3 className="font-serif text-lg text-white mb-1">No Received Quotations</h3>
+            <p className="text-xs text-neutral-400">No submitted vendor quotations were found for your organization.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 font-sans">
             {quotations.map((q) => (
               <div
                 key={q.id}
-                className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4 hover:border-slate-300 transition"
+                className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between gap-5 hover:border-neutral-700 transition"
               >
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-extrabold text-[#2383E2] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
+                      <span className="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-2.5 py-0.5 rounded-full">
                         {q.quotationNumber}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400">
+                      <span className="text-[10px] font-mono text-neutral-400">
                         RFQ: {q.rfq.rfqNumber}
                       </span>
                     </div>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(q.status)}`}>
+                    <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(q.status)}`}>
                       {q.status}
                     </span>
                   </div>
 
-                  <h3 className="font-extrabold text-slate-950 text-base mb-1">{q.rfq.title}</h3>
+                  <h3 className="font-serif text-xl font-normal text-white mb-2">{q.rfq.title}</h3>
 
-                  <div className="flex items-center gap-2 text-xs text-slate-600 mb-3">
-                    <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Vendor: <strong className="text-slate-900">{q.vendor.name}</strong></span>
+                  <div className="flex items-center gap-2 text-xs text-neutral-400 mb-4 font-sans">
+                    <Building2 className="w-3.5 h-3.5 text-neutral-500" />
+                    <span>Vendor: <strong className="text-white">{q.vendor.name}</strong></span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <div className="p-4 rounded-2xl bg-[#141414] border border-neutral-800 flex items-center justify-between font-sans">
                     <div>
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block">Total Quoted Price</span>
-                      <span className="text-lg font-black text-slate-950">
+                      <span className="text-[10px] font-mono text-neutral-500 uppercase block">Total Quoted Price</span>
+                      <span className="text-lg font-mono font-bold text-white">
                         ₹{q.totalAmount.toLocaleString("en-IN")}
                       </span>
                     </div>
                     {q.deliveryDays && (
                       <div className="text-right">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Delivery</span>
-                        <span className="text-xs font-bold text-slate-700">{q.deliveryDays} Days</span>
+                        <span className="text-[10px] font-mono text-neutral-500 uppercase block">Delivery Time</span>
+                        <span className="text-xs font-semibold text-neutral-300">{q.deliveryDays} Days</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-[11px] text-slate-400 font-medium">
+                <div className="pt-4 border-t border-neutral-800/80 flex items-center justify-between text-xs font-sans">
+                  <span className="text-[11px] text-neutral-500 font-medium">
                     Submitted: {q.submittedAt ? new Date(q.submittedAt).toLocaleDateString() : new Date(q.createdAt).toLocaleDateString()}
                   </span>
 
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/buyer/rfqs/${q.rfqId}/compare`}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] border border-neutral-700/60 text-neutral-300 hover:text-white font-medium text-xs transition"
                     >
-                      <Layers className="w-3.5 h-3.5 text-[#2383E2]" />
+                      <Layers className="w-3.5 h-3.5 text-blue-400" />
                       <span>Compare</span>
                     </Link>
                     <Link
                       href={`/buyer/quotations/${q.id}`}
-                      className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition"
+                      className="inline-flex items-center gap-1 px-4 py-1.5 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>View Detail</span>

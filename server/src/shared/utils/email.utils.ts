@@ -11,6 +11,11 @@ interface SendInvitationEmailParams {
 let testTransporter: nodemailer.Transporter | null = null;
 
 async function getTransporter(): Promise<nodemailer.Transporter | null> {
+  // Skip external SMTP attempts during automated test execution for instant speed
+  if (process.env.NODE_ENV === "test") {
+    return null;
+  }
+
   if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
     const isGmail = process.env.SMTP_HOST.includes("gmail");
     return nodemailer.createTransport({
@@ -22,11 +27,6 @@ async function getTransporter(): Promise<nodemailer.Transporter | null> {
         pass: process.env.SMTP_PASS,
       },
     });
-  }
-
-  // Fallback to Ethereal Email test account for development (skipped in test runner for speed)
-  if (process.env.NODE_ENV === "test") {
-    return null;
   }
 
   if (!testTransporter) {
@@ -49,7 +49,6 @@ export async function sendEmail(params: { to: string; subject: string; html: str
   try {
     const transporter = await getTransporter();
     if (!transporter) {
-      console.log(`[Email Utility] ✉️ Test Mode: Generic email constructed for ${params.to}`);
       return;
     }
 
@@ -68,71 +67,36 @@ export async function sendEmail(params: { to: string; subject: string; html: str
 export async function sendInvitationEmail(params: SendInvitationEmailParams): Promise<string | null> {
   try {
     const transporter = await getTransporter();
-
-    if (!transporter) {
-      console.log(`[Email Utility] ✉️ Test Mode: Invitation email constructed for ${params.toEmail}`);
-      return params.invitationUrl;
-    }
-
     const fromAddress = process.env.SMTP_FROM || `"Tenour Platform" <${process.env.SMTP_USER || "noreply@tenour.com"}>`;
-    const subject = `You've been invited to join ${params.organizationName} on Tenour`;
 
     const htmlContent = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;">
-        <div style="margin-bottom: 24px; text-align: left;">
-          <div style="display: inline-block; background-color: #0f172a; color: #ffffff; width: 36px; height: 36px; border-radius: 8px; text-align: center; line-height: 36px; font-weight: 900; font-size: 18px;">
-            N
-          </div>
-          <span style="font-weight: 800; font-size: 20px; color: #0f172a; margin-left: 8px; vertical-align: middle;">Tenour</span>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background-color: #ffffff; border: 1px solid #e2e8f0; rounded: 16px;">
+        <div style="margin-bottom: 24px;">
+          <h2 style="color: #0f172a; margin: 0 0 8px 0; font-size: 20px;">You're Invited to Join ${params.organizationName}</h2>
+          <p style="color: #475569; font-size: 14px; margin: 0;">Hi ${params.recipientName}, you have been assigned the <strong>${params.roleName}</strong> role on the Tenour Procurement OS.</p>
         </div>
-
-        <h2 style="font-size: 22px; font-weight: 800; color: #0f172a; margin-bottom: 12px; letter-spacing: -0.5px;">
-          You're invited to join ${params.organizationName}
-        </h2>
-
-        <p style="font-size: 14px; color: #475569; line-height: 1.6; margin-bottom: 24px;">
-          Hi <strong>${params.recipientName}</strong>,<br />
-          You have been invited to join <strong>${params.organizationName}</strong> on the Tenour procurement platform as an assigned <strong>${params.roleName}</strong>.
-        </p>
-
-        <div style="margin-bottom: 32px;">
-          <a href="${params.invitationUrl}" style="display: inline-block; background-color: #2383E2; color: #ffffff; font-weight: 600; font-size: 14px; padding: 12px 28px; text-decoration: none; border-radius: 8px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);">
-            Accept Invitation & Set Password →
-          </a>
+        <div style="margin-bottom: 24px; padding: 16px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <p style="margin: 0 0 8px 0; font-size: 13px; color: #64748b;">Click below to set your account password and join your workspace:</p>
+          <a href="${params.invitationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #0f172a; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px;">Accept Invitation</a>
         </div>
-
-        <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; border-top: 1px solid #f1f5f9; padding-top: 20px; margin-top: 24px;">
-          Or copy and paste this link into your web browser:<br />
-          <a href="${params.invitationUrl}" style="color: #2383E2; text-decoration: underline; word-break: break-all;">${params.invitationUrl}</a>
-        </p>
-
-        <p style="font-size: 11px; color: #cbd5e1; margin-top: 16px;">
-          This invitation link expires in 48 hours. If you did not expect this invitation, you can safely ignore this email.
-        </p>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0;">Or copy this link into your browser: <br/><span style="color: #2383E2;">${params.invitationUrl}</span></p>
       </div>
     `;
+
+    if (!transporter) {
+      return params.invitationUrl;
+    }
 
     const info = await transporter.sendMail({
       from: fromAddress,
       to: params.toEmail,
-      subject,
+      subject: `Invitation to join ${params.organizationName} on Tenour`,
       html: htmlContent,
     });
 
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) {
-      console.log(`[Email Utility] ✉️ Invitation Email sent to ${params.toEmail}!`);
-      console.log(`[Email Utility] 🔗 Preview Test Email URL: ${previewUrl}`);
-      return previewUrl as string;
-    }
-
-    console.log(`[Email Utility] ✉️ Real Invitation Email sent successfully to ${params.toEmail}`);
-    return null;
+    return nodemailer.getTestMessageUrl(info) || null;
   } catch (error: any) {
-    console.error(`[Email Utility] ❌ Failed to send email to ${params.toEmail}:`, error.message);
-    if (error.message?.includes("Invalid login") || error.message?.includes("Username and Password not accepted")) {
-      console.error(`[Email Utility] 💡 Gmail Tip: Standard Gmail passwords are blocked. Please generate a 16-character Google App Password at: https://myaccount.google.com/apppasswords and use it as SMTP_PASS in server/.env`);
-    }
+    console.error(`[Email Utility] ❌ Failed to send invitation email to ${params.toEmail}:`, error.message);
     return null;
   }
 }

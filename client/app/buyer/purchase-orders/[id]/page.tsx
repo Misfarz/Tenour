@@ -406,11 +406,11 @@ export default function BuyerPurchaseOrderDetailPage({
 
       {/* Cancellation Modal */}
       {cancelModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-200 flex flex-col gap-4">
-            <h3 className="text-lg font-black text-slate-950 tracking-tight">Cancel Purchase Order</h3>
-            <p className="text-xs text-slate-600">
-              Please provide an official reason for cancelling Purchase Order <strong>{po.poNumber}</strong>.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 font-sans">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl flex flex-col gap-4">
+            <h3 className="font-serif text-xl font-normal text-white">Cancel Purchase Order</h3>
+            <p className="text-xs text-neutral-400 font-sans">
+              Please provide an official reason for cancelling Purchase Order <strong className="text-white font-mono">{po.poNumber}</strong>.
             </p>
 
             <textarea
@@ -418,13 +418,13 @@ export default function BuyerPurchaseOrderDetailPage({
               placeholder="e.g. Budget reallocation / Scope change..."
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs font-semibold focus:outline-none focus:border-red-500"
+              className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-red-500 transition font-sans"
             />
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800 font-sans">
               <button
                 onClick={() => setCancelModalOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 text-xs font-medium transition cursor-pointer"
               >
                 Keep Order
               </button>
@@ -432,9 +432,9 @@ export default function BuyerPurchaseOrderDetailPage({
               <button
                 onClick={handleCancelPo}
                 disabled={submitting}
-                className="px-5 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition cursor-pointer disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-2.5 rounded-full bg-red-500 hover:bg-red-600 text-white text-xs font-semibold shadow-md transition cursor-pointer disabled:opacity-50 flex items-center gap-2"
               >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : null}
                 <span>Confirm Cancellation</span>
               </button>
             </div>

@@ -307,16 +307,25 @@ export class PurchaseRequestRepository {
     });
   }
 
-  static async findPendingApprovals(organizationId: string, managerUserId: string) {
+  static async findPendingApprovals(organizationId: string, managerUserId: string, role?: string) {
+    const whereCondition: any = {
+      organizationId,
+      status: "PENDING_APPROVAL",
+    };
+
+    if (role !== "ORG_ADMIN") {
+      whereCondition.approval = {
+        approverId: managerUserId,
+        status: "PENDING",
+      };
+    } else {
+      whereCondition.approval = {
+        status: "PENDING",
+      };
+    }
+
     return prisma.purchaseRequest.findMany({
-      where: {
-        organizationId,
-        status: "PENDING_APPROVAL",
-        approval: {
-          approverId: managerUserId,
-          status: "PENDING",
-        },
-      },
+      where: whereCondition,
       include: {
         items: true,
         requester: {

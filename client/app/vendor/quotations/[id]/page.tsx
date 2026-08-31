@@ -4,17 +4,13 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
+import { VendorNavbar } from "@/components/vendor-navbar";
 import {
   ArrowLeft,
   Loader2,
-  Save,
   Send,
   Info,
-  CheckCircle2,
   Lock,
-  Calendar,
-  IndianRupee,
-  FileText,
 } from "lucide-react";
 
 interface QuotationItem {
@@ -117,15 +113,16 @@ export default function VendorQuotationDetailPage({
     setError(null);
     try {
       const token = localStorage.getItem("vendorToken");
-      const res = await apiClient<any>(`/vendor/quotations/${quotationId}/submit`, {
+      const res = await apiClient(`/vendor/quotations/${quotationId}/submit`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
+
       if (res.success) {
         fetchQuotationDetail();
       }
     } catch (err: any) {
-      setError(err.message || "Failed to submit quotation");
+      setError(err.message || "Failed to submit draft quotation");
     } finally {
       setSubmitting(false);
     }
@@ -134,66 +131,50 @@ export default function VendorQuotationDetailPage({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "DRAFT":
-        return "bg-slate-100 text-slate-700 border-slate-300";
+        return "bg-[#282828] text-neutral-400 border-neutral-700/60 font-mono";
       case "SUBMITTED":
-        return "bg-blue-50 text-blue-700 border-blue-200";
-      case "UNDER_REVIEW":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-blue-500/10 text-blue-400 border-blue-500/30 font-mono";
       case "SELECTED":
-        return "bg-emerald-50 text-emerald-700 border-emerald-300 font-extrabold";
+        return "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 font-mono font-bold";
       case "REJECTED":
-        return "bg-red-50 text-red-700 border-red-200";
-      case "WITHDRAWN":
-        return "bg-gray-100 text-gray-500 border-gray-200";
+        return "bg-red-500/10 text-red-400 border-red-500/30 font-mono";
       default:
-        return "bg-slate-100 text-slate-700 border-slate-200";
+        return "bg-[#282828] text-neutral-400 border-neutral-700/60 font-mono";
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600 font-sans">
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading quotation details...</span>
+      <div className="min-h-screen flex items-center justify-center bg-[#161616] text-white font-sans">
+        <div className="flex items-center gap-3 bg-[#1e1e1e] border border-neutral-800 px-6 py-4 rounded-2xl shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <span className="text-xs font-mono text-neutral-400 font-sans">Loading quotation details...</span>
         </div>
       </div>
     );
   }
 
-  if (!vendorInfo || !quotation) {
-    return (
-      <div className="min-h-screen bg-[#FAFBFD] p-10 flex flex-col items-center justify-center text-center">
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Quotation Not Found</h2>
-        <p className="text-xs text-slate-500 mb-4">{error || "The requested quotation does not exist or access is restricted."}</p>
-        <Link href="/vendor/quotations" className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold">
-          Back to Quotations
-        </Link>
-      </div>
-    );
-  }
+  if (!vendorInfo || !quotation) return null;
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
-      {/* Header */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/vendor/quotations"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Back to Quotations</span>
-          </Link>
-          <div className="text-xs font-bold text-[#2383E2]">{vendorInfo.name}</div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col font-sans selection:bg-white selection:text-black">
+      {/* Navbar */}
+      <VendorNavbar activePath="/vendor/quotations" />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-10 flex flex-col gap-6">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        {/* Top Link */}
+        <Link
+          href="/vendor/quotations"
+          className="inline-flex items-center gap-2 text-xs font-medium text-neutral-400 hover:text-white transition self-start font-sans"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back to Quotations List</span>
+        </Link>
+
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center justify-between font-sans">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="font-bold cursor-pointer">✕</button>
           </div>
@@ -201,109 +182,109 @@ export default function VendorQuotationDetailPage({
 
         {/* Status Notification Banner */}
         {quotation.status !== "DRAFT" ? (
-          <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-center gap-3">
-            <Lock className="w-4 h-4 text-slate-500 flex-shrink-0" />
+          <div className="p-4 sm:p-5 rounded-3xl bg-[#1e1e1e] border border-neutral-800 text-neutral-300 text-xs flex items-center gap-3 font-sans shadow-xl">
+            <Lock className="w-4 h-4 text-neutral-500 flex-shrink-0" />
             <span>
-              This quotation is in <strong>{quotation.status}</strong> state and pricing is immutable.
+              This quotation is in <strong className="text-white font-mono">{quotation.status}</strong> state and commercial pricing is immutable.
             </span>
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <Info className="w-4 h-4 text-[#2383E2]" />
-              <span>This quotation is currently a <strong>DRAFT</strong>. Submit it so the buyer can review your proposal.</span>
+          <div className="p-4 sm:p-5 rounded-3xl bg-[#1e1e1e] border border-blue-500/30 text-neutral-300 text-xs flex items-center justify-between gap-4 font-sans shadow-xl">
+            <div className="flex items-center gap-3">
+              <Info className="w-4 h-4 text-blue-400 flex-shrink-0" />
+              <span>This quotation is currently a <strong className="text-white font-mono">DRAFT</strong>. Submit it so the buyer can review your proposal.</span>
             </div>
             <button
               onClick={handleSubmitDraft}
               disabled={submitting}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-bold text-xs transition cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-600 text-black font-semibold text-xs transition cursor-pointer shadow-md disabled:opacity-50"
             >
-              {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+              {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : <Send className="w-3.5 h-3.5 text-black" />}
               <span>Submit Now</span>
             </button>
           </div>
         )}
 
         {/* Quotation Header Card */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm flex flex-col gap-6">
-          <div className="border-b border-slate-100 pb-6 flex items-start justify-between">
+        <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 shadow-2xl flex flex-col gap-6 font-sans">
+          <div className="border-b border-neutral-800/80 pb-6 flex items-start justify-between">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className="text-xs font-mono font-extrabold text-[#2383E2] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
+                <span className="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-2.5 py-0.5 rounded-full">
                   {quotation.quotationNumber}
                 </span>
-                <span className="text-xs font-mono text-slate-400">
+                <span className="text-xs font-mono text-neutral-400">
                   RFQ: {quotation.rfq.rfqNumber}
                 </span>
-                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(quotation.status)}`}>
+                <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full border ${getStatusBadge(quotation.status)}`}>
                   {quotation.status}
                 </span>
               </div>
-              <h1 className="text-3xl font-extrabold text-slate-950 tracking-tight">{quotation.rfq.title}</h1>
+              <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-tight">{quotation.rfq.title}</h1>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] font-bold text-slate-400 uppercase block">Grand Total</span>
-              <span className="text-2xl font-black text-slate-950">₹{quotation.totalAmount.toLocaleString("en-IN")}</span>
+              <span className="text-[10px] font-mono text-neutral-500 uppercase block">Grand Total</span>
+              <span className="text-2xl sm:text-3xl font-mono font-bold text-white">₹{quotation.totalAmount.toLocaleString("en-IN")}</span>
             </div>
           </div>
 
           {/* Terms Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <span className="text-slate-400 font-bold text-[10px] uppercase block mb-1">Delivery Timeline</span>
-              <span className="font-extrabold text-slate-950">{quotation.deliveryDays ? `${quotation.deliveryDays} Days` : "Standard"}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs font-sans">
+            <div className="bg-[#141414] p-4 rounded-2xl border border-neutral-800">
+              <span className="text-neutral-500 font-mono text-[10px] uppercase block mb-1">Delivery Timeline</span>
+              <span className="font-semibold text-white">{quotation.deliveryDays ? `${quotation.deliveryDays} Days` : "Standard"}</span>
             </div>
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <span className="text-slate-400 font-bold text-[10px] uppercase block mb-1">Payment Terms</span>
-              <span className="font-semibold text-slate-950">{quotation.paymentTerms || "Net 30"}</span>
+            <div className="bg-[#141414] p-4 rounded-2xl border border-neutral-800">
+              <span className="text-neutral-500 font-mono text-[10px] uppercase block mb-1">Payment Terms</span>
+              <span className="font-semibold text-neutral-200">{quotation.paymentTerms || "Net 30"}</span>
             </div>
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <span className="text-slate-400 font-bold text-[10px] uppercase block mb-1">Warranty Terms</span>
-              <span className="font-semibold text-slate-950">{quotation.warrantyTerms || "Standard Warranty"}</span>
+            <div className="bg-[#141414] p-4 rounded-2xl border border-neutral-800">
+              <span className="text-neutral-500 font-mono text-[10px] uppercase block mb-1">Warranty Terms</span>
+              <span className="font-semibold text-neutral-200">{quotation.warrantyTerms || "Standard Warranty"}</span>
             </div>
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-              <span className="text-slate-400 font-bold text-[10px] uppercase block mb-1">Valid Until</span>
-              <span className="font-semibold text-slate-950">
+            <div className="bg-[#141414] p-4 rounded-2xl border border-neutral-800">
+              <span className="text-neutral-500 font-mono text-[10px] uppercase block mb-1">Valid Until</span>
+              <span className="font-semibold text-neutral-200 font-mono">
                 {quotation.validUntil ? new Date(quotation.validUntil).toLocaleDateString() : "N/A"}
               </span>
             </div>
           </div>
 
           {/* Items Breakdown Table */}
-          <div className="pt-4 border-t border-slate-100">
-            <h3 className="font-extrabold text-slate-950 text-base mb-3">Item Breakdown</h3>
-            <div className="border border-slate-200 rounded-xl overflow-hidden">
+          <div className="pt-6 border-t border-neutral-800/80 font-sans">
+            <h3 className="font-serif text-xl font-normal text-white mb-3">Item Breakdown</h3>
+            <div className="border border-neutral-800 rounded-2xl overflow-hidden">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase">
-                    <th className="py-3 px-4">Item Name</th>
-                    <th className="py-3 px-4">Unit Price (₹)</th>
-                    <th className="py-3 px-4">Quantity</th>
-                    <th className="py-3 px-4">Discount (₹)</th>
-                    <th className="py-3 px-4">Tax (₹)</th>
-                    <th className="py-3 px-4 text-right">Line Total (₹)</th>
+                  <tr className="bg-[#181818] border-b border-neutral-800 text-[10px] font-mono font-bold text-neutral-400 uppercase tracking-widest">
+                    <th className="py-3.5 px-4">Item Name</th>
+                    <th className="py-3.5 px-4">Unit Price (₹)</th>
+                    <th className="py-3.5 px-4">Quantity</th>
+                    <th className="py-3.5 px-4">Discount (₹)</th>
+                    <th className="py-3.5 px-4">Tax (₹)</th>
+                    <th className="py-3.5 px-4 text-right">Line Total (₹)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-neutral-800/60">
                   {quotation.items.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/60">
-                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                    <tr key={item.id} className="hover:bg-[#242424]">
+                      <td className="py-3.5 px-4 font-semibold text-white">
                         {item.rfqItem?.name}
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800">
+                      <td className="py-3.5 px-4 font-mono text-neutral-300">
                         ₹{item.unitPrice.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-4 font-semibold text-slate-800">
+                      <td className="py-3.5 px-4 font-mono font-semibold text-neutral-300">
                         {item.quantity} {item.rfqItem?.unit || "PCS"}
                       </td>
-                      <td className="py-3.5 px-4 text-emerald-600 font-medium">
+                      <td className="py-3.5 px-4 font-mono text-emerald-400">
                         - ₹{item.discount.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-4 font-medium text-slate-600">
+                      <td className="py-3.5 px-4 font-mono text-neutral-400">
                         + ₹{item.tax.toLocaleString("en-IN")}
                       </td>
-                      <td className="py-3.5 px-4 text-right font-extrabold text-slate-950">
+                      <td className="py-3.5 px-4 text-right font-mono font-bold text-white">
                         ₹{item.totalPrice.toLocaleString("en-IN")}
                       </td>
                     </tr>

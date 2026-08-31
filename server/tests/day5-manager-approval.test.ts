@@ -181,13 +181,13 @@ describe("Day 5 Suite: Manager Approval Workflow, Authorization & Security", () 
       expect(res.body.success).toBe(false);
     });
 
-    it("Non-manager (ABC Admin - ORG_ADMIN) is blocked from pending approvals -> 403 Forbidden", async () => {
+    it("ORG_ADMIN can view pending approvals -> 200 OK", async () => {
       const res = await request(app)
         .get("/purchase-requests/pending-approval")
         .set("Authorization", `Bearer ${abcAdminToken}`)
-        .expect(403);
+        .expect(200);
 
-      expect(res.body.success).toBe(false);
+      expect(res.body.success).toBe(true);
     });
   });
 

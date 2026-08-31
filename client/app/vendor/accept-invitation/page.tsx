@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
-import { Lock, Loader2, CheckCircle2, Building2 } from "lucide-react";
+import { Loader2, CheckCircle2, Building2 } from "lucide-react";
 
 function VendorAcceptInvitationContent() {
   const searchParams = useSearchParams();
@@ -78,18 +78,18 @@ function VendorAcceptInvitationContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#FAFBFD] flex flex-col items-center justify-center p-6 text-slate-900 font-sans">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md w-full text-center shadow-sm">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4 border border-emerald-100">
+      <div className="min-h-screen bg-[#161616] flex flex-col items-center justify-center p-6 text-white font-sans selection:bg-white selection:text-black">
+        <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
             <CheckCircle2 className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-950 mb-2">Vendor Account Activated!</h1>
-          <p className="text-slate-600 text-xs leading-relaxed mb-6">
+          <h1 className="font-serif text-2xl font-normal text-white mb-2">Vendor Account Activated!</h1>
+          <p className="text-neutral-400 text-xs leading-relaxed mb-6 font-sans">
             Your password has been set successfully. Redirecting you to the Vendor Login portal...
           </p>
           <Link
             href="/vendor/login"
-            className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs transition"
+            className="inline-flex items-center justify-center gap-2 w-full py-3 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition shadow-md font-sans"
           >
             Go to Vendor Login
           </Link>
@@ -99,77 +99,74 @@ function VendorAcceptInvitationContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] flex flex-col items-center justify-center p-6 text-slate-900 font-sans">
-      <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md w-full shadow-sm">
+    <div className="min-h-screen bg-[#161616] flex flex-col items-center justify-center p-6 text-white font-sans selection:bg-white selection:text-black">
+      <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-8 max-w-md w-full shadow-2xl">
         <div className="flex items-center justify-center gap-2.5 mb-6">
-          <div className="w-9 h-9 rounded-lg bg-slate-950 flex items-center justify-center text-white font-black text-xl shadow-sm">
-            N
-          </div>
-          <span className="font-extrabold text-2xl text-slate-950 tracking-tight">Tenour</span>
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-[#EDF5FF] text-[#1D72C9] border border-[#D0E4FF]">
+          <span className="font-black text-2xl tracking-[-0.06em] text-white">Tenour.</span>
+          <span className="text-[10px] font-mono font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 uppercase tracking-widest">
             Vendor Portal
           </span>
         </div>
 
-        <h2 className="text-xl font-extrabold text-center text-slate-950 mb-1">Set Vendor Account Password</h2>
-        <p className="text-slate-500 text-xs text-center mb-6">
+        <h2 className="font-serif text-2xl font-normal text-center text-white mb-1.5">Set Vendor Account Password</h2>
+        <p className="text-neutral-400 text-xs text-center mb-6 font-sans">
           Set a secure password to activate your Tenour Vendor Portal account.
         </p>
 
         {invitation && (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-5 text-xs space-y-2">
-            <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
-              <span className="text-slate-400 font-bold text-[10px] uppercase">Vendor Company</span>
-              <span className="font-extrabold text-slate-900">{invitation.vendorName}</span>
+          <div className="bg-[#141414] border border-neutral-800 rounded-2xl p-4 mb-5 text-xs space-y-2 font-sans">
+            <div className="flex justify-between items-center pb-2 border-b border-neutral-800">
+              <span className="text-neutral-500 font-mono text-[10px] uppercase">Vendor Company</span>
+              <span className="font-semibold text-white">{invitation.vendorName}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 font-bold text-[10px] uppercase">Representative</span>
-              <span className="font-semibold text-slate-900">{invitation.name}</span>
+              <span className="text-neutral-500 font-mono text-[10px] uppercase">Representative</span>
+              <span className="font-medium text-neutral-300">{invitation.name}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-slate-400 font-bold text-[10px] uppercase">Registered Email</span>
-              <span className="font-mono font-semibold text-[#2383E2]">{invitation.email}</span>
+              <span className="text-neutral-500 font-mono text-[10px] uppercase">Registered Email</span>
+              <span className="font-mono font-semibold text-emerald-400">{invitation.email}</span>
             </div>
           </div>
         )}
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs mb-4">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs mb-4 font-sans">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 text-xs font-sans">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Password</label>
+            <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1.5">New Password</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#2383E2]"
+              className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 transition"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">Confirm Password</label>
+            <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1.5">Confirm Password</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#2383E2]"
+              className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-600 focus:outline-none focus:border-neutral-500 transition"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full py-3.5 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer font-sans"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Activate Vendor Account"}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : "Activate Vendor Account"}
           </button>
         </form>
       </div>
@@ -180,8 +177,8 @@ function VendorAcceptInvitationContent() {
 export default function VendorAcceptInvitationPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
+      <div className="min-h-screen flex items-center justify-center bg-[#161616]">
+        <Loader2 className="w-5 h-5 animate-spin text-white" />
       </div>
     }>
       <VendorAcceptInvitationContent />

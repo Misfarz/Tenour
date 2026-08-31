@@ -569,70 +569,70 @@ export default function BuyerVendorDetailPage({
 
       {/* Add Contact Modal */}
       {showContactModal && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <h3 className="font-extrabold text-lg text-slate-950 mb-1">Add Vendor Contact</h3>
-            <p className="text-xs text-slate-500 mb-4">Add a key contact person for {vendor.name}.</p>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+            <h3 className="font-serif text-xl font-normal text-white mb-1">Add Vendor Contact</h3>
+            <p className="text-xs text-neutral-400 mb-5 font-sans">Add a key contact person for {vendor.name}.</p>
 
-            <form onSubmit={handleAddContact} className="space-y-3 text-xs">
+            <form onSubmit={handleAddContact} className="space-y-4 text-xs font-sans">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Contact Name *</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Contact Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Rahul Kumar"
                   value={contactName}
                   onChange={(e) => setContactName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Designation</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Designation</label>
                 <input
                   type="text"
                   placeholder="e.g. Key Account Manager"
                   value={contactDesignation}
                   onChange={(e) => setContactDesignation(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Email</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Email</label>
                   <input
                     type="email"
                     placeholder="rahul@dell.com"
                     value={contactEmail}
                     onChange={(e) => setContactEmail(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                   />
                 </div>
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Phone</label>
+                  <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Phone</label>
                   <input
                     type="text"
                     placeholder="+91 9876543210"
                     value={contactPhone}
                     onChange={(e) => setContactPhone(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                    className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                   />
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setShowContactModal(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold"
+                  className="px-5 py-2.5 bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 rounded-full text-xs font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg font-semibold cursor-pointer"
+                  className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black rounded-full text-xs font-semibold cursor-pointer shadow-md"
                 >
                   Save Contact
                 </button>
@@ -644,52 +644,52 @@ export default function BuyerVendorDetailPage({
 
       {/* Invite Vendor Modal */}
       {showInviteModal && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <h3 className="font-extrabold text-lg text-slate-950 mb-1">Invite Vendor to Portal</h3>
-            <p className="text-xs text-slate-500 mb-4">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 font-sans">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+            <h3 className="font-serif text-xl font-normal text-white mb-1">Invite Vendor to Portal</h3>
+            <p className="text-xs text-neutral-400 mb-5 font-sans">
               Send a secure invitation link to {vendor.name}&apos;s representative to activate their Vendor Portal account.
             </p>
 
-            <form onSubmit={handleSendInvitation} className="space-y-3 text-xs">
+            <form onSubmit={handleSendInvitation} className="space-y-4 text-xs font-sans">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Contact Name *</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Contact Name *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Rahul Sales"
                   value={inviteName}
                   onChange={(e) => setInviteName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Email Address *</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Email Address *</label>
                 <input
                   type="email"
                   required
                   placeholder="rahul@dell.com"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setShowInviteModal(false)}
-                  className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg font-semibold"
+                  className="px-5 py-2.5 bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 rounded-full text-xs font-medium"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg font-semibold flex items-center gap-1.5 cursor-pointer"
+                  className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black rounded-full text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-md"
                 >
-                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Send Invitation"}
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : "Send Invitation"}
                 </button>
               </div>
             </form>

@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useAuth } from "@/context/auth-context";
-import { Mail, Lock, ArrowRight, Loader2, LogIn, Building2 } from "lucide-react";
+import { Loader2, Building2, ArrowLeft } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -41,123 +42,141 @@ export default function BuyerLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
-      {/* Top Bar Header */}
-      <header className="border-b border-slate-100 py-4 px-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-md bg-slate-950 flex items-center justify-center text-white font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
-              N
-            </div>
-            <span className="font-extrabold text-xl text-slate-950 tracking-tight">
-              Tenour
-            </span>
-          </Link>
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col justify-between font-sans selection:bg-white selection:text-black p-6 md:p-12">
+      {/* Top Header Row (Minimal Text Logo & Back Button) */}
+      <div className="max-w-7xl w-full mx-auto flex items-center justify-between">
+        <Link href="/" className="group flex items-center">
+          <span className="text-2xl md:text-3xl font-black tracking-[-0.06em] text-white font-sans group-hover:opacity-90 transition">
+            Tenour<span className="text-[#2383E2] font-mono font-normal">.</span>
+          </span>
+        </Link>
 
-          <Link
-            href="/buyer/register"
-            className="text-xs font-medium text-slate-600 hover:text-slate-950 transition"
-          >
-            Don't have an account? <span className="text-[#2383E2] font-semibold">Sign up free</span>
-          </Link>
-        </div>
-      </header>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs font-sans text-neutral-400 hover:text-white transition"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Back to Home</span>
+        </Link>
+      </div>
 
-      {/* Main Login Form Container */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 bg-[#FAFBFD]">
-        <div className="w-full max-w-md">
-          {/* White Card with Notion-style subtle border and soft shadow */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm hover:shadow-md transition">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-[#EDF5FF] text-[#2383E2] mb-4">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">
-                Buyer Sign In
-              </h1>
-              <p className="text-sm text-slate-500 mt-1">
-                Access your organization's procurement workspace
-              </p>
-            </div>
+      {/* Main Split Screen Hero Container */}
+      <main className="max-w-7xl w-full mx-auto py-8 md:py-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        {/* Left Side: Headline & Claude.ai Style Login Card */}
+        <div className="lg:col-span-6 flex flex-col justify-center">
+          <div className="mb-8">
+            <h1 className="font-serif text-4xl sm:text-5xl md:text-6xl font-normal text-white tracking-tight leading-[1.08]">
+              Sourcing what’s next
+            </h1>
+            <p className="font-sans text-neutral-400 text-sm sm:text-base mt-4 max-w-xl">
+              Your thinking partner for enterprise sourcing, multi-stage approvals, and global supplier bidding.
+            </p>
+          </div>
 
+          {/* Form Card Box */}
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md shadow-2xl">
             {error && (
-              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                {error}
+              <div className="mb-6 p-3.5 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center gap-2 font-sans">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse shrink-0" />
+                <span>{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Quick Action Buttons */}
+            <div className="space-y-3 mb-5 font-sans">
+              <button
+                type="button"
+                className="w-full py-3 px-4 rounded-2xl bg-[#282828] hover:bg-[#323232] text-white text-xs font-medium border border-neutral-700/60 transition flex items-center justify-center gap-3 cursor-pointer"
+              >
+                <span className="text-sm font-bold text-blue-400">G</span>
+                <span>Continue with Google</span>
+              </button>
+
+              <button
+                type="button"
+                className="w-full py-3 px-4 rounded-2xl bg-[#282828] hover:bg-[#323232] text-white text-xs font-medium border border-neutral-700/60 transition flex items-center justify-center gap-3 cursor-pointer"
+              >
+                <Building2 className="w-4 h-4 text-emerald-400" />
+                <span>Continue as Buyer Organization</span>
+              </button>
+            </div>
+
+            <div className="relative my-5 text-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-neutral-800" />
+              </div>
+              <span className="relative px-3 bg-[#1e1e1e] text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
+                OR
+              </span>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 font-sans">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    {...register("email")}
-                    type="email"
-                    placeholder="misfar@example.com"
-                    className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#2383E2] focus:ring-1 focus:ring-[#2383E2] transition"
-                  />
-                </div>
+                <input
+                  {...register("email")}
+                  type="email"
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 focus:border-neutral-500 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none transition"
+                />
                 {errors.email && (
-                  <p className="text-xs text-red-500 mt-1.5">{errors.email.message}</p>
+                  <p className="text-[11px] text-red-400 mt-1.5 px-1 font-sans">{errors.email.message}</p>
                 )}
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    Password
-                  </label>
-                </div>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input
-                    {...register("password")}
-                    type="password"
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-3.5 py-2.5 bg-slate-50/50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-[#2383E2] focus:ring-1 focus:ring-[#2383E2] transition"
-                  />
-                </div>
+                <input
+                  {...register("password")}
+                  type="password"
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 focus:border-neutral-500 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none transition"
+                />
                 {errors.password && (
-                  <p className="text-xs text-red-500 mt-1.5">{errors.password.message}</p>
+                  <p className="text-[11px] text-red-400 mt-1.5 px-1 font-sans">{errors.password.message}</p>
                 )}
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full mt-2 py-3 px-4 bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-sm rounded-lg shadow-sm transition flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                className="w-full py-3.5 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition shadow-md cursor-pointer mt-2 disabled:opacity-50 flex items-center justify-center gap-2 font-sans"
               >
                 {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
                 ) : (
-                  <>
-                    <span>Sign In to Buyer Workspace</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                  </>
+                  <span>Continue with email</span>
                 )}
               </button>
             </form>
 
-            <div className="mt-6 text-center text-xs text-slate-500 pt-6 border-t border-slate-100">
-              Need a buyer account?{" "}
+            <div className="mt-6 pt-4 text-center font-sans">
               <Link
-                href="/buyer/register"
-                className="text-[#2383E2] hover:text-[#1D72C9] font-semibold transition"
+                href="/vendor/login"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-[#282828] hover:bg-[#323232] text-neutral-300 text-xs font-medium border border-neutral-700/60 transition"
               >
-                Create an account
+                <span>Switch to Vendor Portal →</span>
               </Link>
             </div>
           </div>
         </div>
+
+        {/* Right Side: Editorial Image Card */}
+        <div className="lg:col-span-6 hidden lg:block">
+          <div className="relative rounded-3xl overflow-hidden border border-neutral-800/80 shadow-2xl aspect-[4/3] max-h-[540px] w-full">
+            <Image
+              src="/claude_hero.jpg"
+              alt="Tenour Sourcing Workspace"
+              fill
+              className="object-cover hover:scale-102 transition-transform duration-700"
+              priority
+            />
+          </div>
+        </div>
       </main>
 
-      {/* Notion-Style Clean Footer */}
-      <footer className="border-t border-slate-100 bg-white py-4 px-6 text-center text-xs text-slate-400">
-        Tenour Platform • Clean Architecture Auth Module
+      {/* Footer Copy */}
+      <footer className="max-w-7xl w-full mx-auto text-xs text-neutral-500 font-sans text-center md:text-left">
+        © {new Date().getFullYear()} Tenour Inc. All rights reserved.
       </footer>
     </div>
   );

@@ -21,8 +21,13 @@ export async function apiClient<T = any>(
 
   let token: string | null = null;
   if (typeof window !== "undefined") {
-    if (cleanEndpoint.startsWith("/vendor")) {
-      token = localStorage.getItem("vendorToken") || localStorage.getItem("accessToken");
+    // Only use vendorToken for Vendor Portal routes (/vendor/... or /auth/vendor/...)
+    // Buyer routes use HTTP-only cookies (credentials: "include"). NEVER attach vendorToken to buyer requests!
+    const isVendorPortalEndpoint =
+      cleanEndpoint.startsWith("/vendor/") || cleanEndpoint.startsWith("/auth/vendor");
+
+    if (isVendorPortalEndpoint) {
+      token = localStorage.getItem("vendorToken");
     } else {
       token = localStorage.getItem("accessToken");
     }

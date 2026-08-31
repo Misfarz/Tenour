@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useAuth } from "@/context/auth-context";
 import { apiClient } from "@/lib/api-client";
 import { BuyerNavbar } from "@/components/buyer-navbar";
@@ -12,9 +11,6 @@ import {
   Edit2,
   Trash2,
   Loader2,
-  Lock,
-  ArrowLeft,
-  LogOut,
   Users,
 } from "lucide-react";
 
@@ -26,7 +22,7 @@ interface Department {
 }
 
 export default function BuyerDepartmentsPage() {
-  const { user, organization, role, isAuthenticated, isLoading: authLoading, logout } = useAuth();
+  const { user, organization, role, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
 
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -41,6 +37,8 @@ export default function BuyerDepartmentsPage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState<boolean>(false);
+
+  const displayRole = typeof role === "string" ? role : (role as any)?.name || "ORG_ADMIN";
 
   const fetchDepartments = async () => {
     setLoadingDepts(true);
@@ -68,10 +66,10 @@ export default function BuyerDepartmentsPage() {
 
   if (authLoading || loadingDepts) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600">
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading departments...</span>
+      <div className="min-h-screen flex items-center justify-center bg-[#161616] text-white font-sans">
+        <div className="flex items-center gap-3 bg-[#1e1e1e] border border-neutral-800 px-6 py-4 rounded-2xl shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <span className="text-xs font-mono text-neutral-400">Loading departments...</span>
         </div>
       </div>
     );
@@ -80,6 +78,8 @@ export default function BuyerDepartmentsPage() {
   if (!isAuthenticated || !user) {
     return null;
   }
+
+  const canManageDepartments = displayRole === "ORG_ADMIN";
 
   const handleCreateDepartment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,31 +151,31 @@ export default function BuyerDepartmentsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col font-sans selection:bg-white selection:text-black">
       {/* Top Navbar */}
       <BuyerNavbar activePath="/buyer/departments" />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col gap-6">
-        {/* Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        {/* Banner Container */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#1e1e1e] p-6 sm:p-8 rounded-3xl border border-neutral-800/80 shadow-2xl">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EDF5FF] border border-[#D0E4FF] text-[#1D72C9] text-xs font-semibold mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-extrabold uppercase tracking-widest mb-3">
               <Building2 className="w-3.5 h-3.5" />
               <span>Department Structure</span>
             </div>
-            <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">
+            <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-tight">
               Manage Departments
             </h1>
-            <p className="text-slate-500 text-xs mt-1">
+            <p className="text-neutral-400 text-xs sm:text-sm mt-1.5 font-sans">
               Create and organize departments for {organization?.name}.
             </p>
           </div>
 
-          {role === "ORG_ADMIN" && (
+          {canManageDepartments && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="px-4 py-2.5 rounded-lg bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+              className="px-5 py-2.5 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs shadow-md transition flex items-center gap-2 cursor-pointer self-start sm:self-auto font-sans"
             >
               <Plus className="w-4 h-4" />
               <span>Create Department</span>
@@ -185,51 +185,53 @@ export default function BuyerDepartmentsPage() {
 
         {/* Alerts */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center justify-between font-sans">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="font-bold cursor-pointer">✕</button>
           </div>
         )}
 
         {success && (
-          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-emerald-300 text-xs flex items-center justify-between font-sans">
             <span>{success}</span>
             <button onClick={() => setSuccess(null)} className="font-bold cursor-pointer">✕</button>
           </div>
         )}
 
         {/* Departments Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {departments.map((d) => (
-            <div key={d.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+            <div key={d.id} className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 shadow-xl hover:border-neutral-700 transition flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#EDF5FF] flex items-center justify-center text-[#2383E2]">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-2xl bg-[#282828] text-blue-400 flex items-center justify-center border border-neutral-700/60">
                     <Building2 className="w-5 h-5" />
                   </div>
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#282828] border border-neutral-700/60 text-neutral-300 text-xs font-mono font-medium">
                     <Users className="w-3.5 h-3.5" />
                     {d.memberCount} Members
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-slate-950 tracking-tight">{d.name}</h3>
-                <p className="text-xs text-slate-400 mt-1 font-mono">ID: {d.id}</p>
+                <h3 className="font-serif text-xl font-normal text-white mb-1">{d.name}</h3>
+                <p className="text-xs text-neutral-500 font-mono">ID: {d.id}</p>
               </div>
 
-              {role === "ORG_ADMIN" && (
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 mt-4">
+              {canManageDepartments && (
+                <div className="pt-4 border-t border-neutral-800/80 flex items-center justify-end gap-2 mt-5">
                   <button
                     onClick={() => {
                       setEditingDept(d);
                       setEditName(d.name);
                     }}
-                    className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                    className="p-2 rounded-xl bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 hover:text-white transition cursor-pointer"
+                    title="Edit Department"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteDepartment(d.id, d.name)}
-                    className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition cursor-pointer"
+                    className="p-2 rounded-xl bg-[#242424] hover:bg-red-950/40 text-neutral-400 hover:text-red-400 transition cursor-pointer"
+                    title="Delete Department"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -239,7 +241,7 @@ export default function BuyerDepartmentsPage() {
           ))}
 
           {departments.length === 0 && (
-            <div className="col-span-full bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-400 text-sm">
+            <div className="col-span-full bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-12 text-center text-neutral-400 text-sm font-sans shadow-2xl">
               No departments created yet.
             </div>
           )}
@@ -248,40 +250,36 @@ export default function BuyerDepartmentsPage() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-lg text-slate-950">Create Department</h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
-            </div>
-
-            <form onSubmit={handleCreateDepartment} className="space-y-4 text-xs">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl font-sans">
+            <h3 className="font-serif text-xl font-normal text-white mb-1">Create Department</h3>
+            <p className="text-xs text-neutral-400 mb-5">Add a new operational department to {organization?.name}.</p>
+            <form onSubmit={handleCreateDepartment} className="space-y-4">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Department Name</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Department Name</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. IT, Procurement, Finance"
+                  placeholder="e.g. Procurement & Logistics"
                   value={deptName}
                   onChange={(e) => setDeptName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-[#2383E2]"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white placeholder:text-neutral-500 focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
-
-              <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold"
+                  className="px-5 py-2.5 bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 rounded-full font-medium text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg font-semibold flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black font-semibold text-xs rounded-full cursor-pointer shadow-md"
                 >
-                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Create Department"}
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : "Save Department"}
                 </button>
               </div>
             </form>
@@ -291,39 +289,35 @@ export default function BuyerDepartmentsPage() {
 
       {/* Edit Modal */}
       {editingDept && (
-        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
-              <h3 className="font-extrabold text-lg text-slate-950">Edit Department</h3>
-              <button onClick={() => setEditingDept(null)} className="text-slate-400 hover:text-slate-700 font-bold">✕</button>
-            </div>
-
-            <form onSubmit={handleUpdateDepartment} className="space-y-4 text-xs">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl font-sans">
+            <h3 className="font-serif text-xl font-normal text-white mb-1">Edit Department</h3>
+            <p className="text-xs text-neutral-400 mb-5">Update department name for {editingDept.name}.</p>
+            <form onSubmit={handleUpdateDepartment} className="space-y-4">
               <div>
-                <label className="block font-semibold text-slate-700 mb-1">Department Name</label>
+                <label className="block text-[11px] font-mono font-bold text-neutral-300 uppercase mb-1">Department Name</label>
                 <input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-[#2383E2]"
+                  className="w-full px-4 py-3 bg-[#141414] border border-neutral-800 rounded-2xl text-xs text-white focus:outline-none focus:border-neutral-500 transition"
                 />
               </div>
-
-              <div className="pt-4 flex justify-end gap-2 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-800">
                 <button
                   type="button"
                   onClick={() => setEditingDept(null)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold"
+                  className="px-5 py-2.5 bg-[#242424] hover:bg-[#2e2e2e] text-neutral-300 rounded-full font-medium text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 bg-[#2383E2] hover:bg-[#1D72C9] text-white rounded-lg font-semibold flex items-center gap-1.5"
+                  className="px-6 py-2.5 bg-white hover:bg-neutral-200 text-black font-semibold text-xs rounded-full cursor-pointer shadow-md"
                 >
-                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Save Changes"}
+                  {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin text-black" /> : "Update Department"}
                 </button>
               </div>
             </form>

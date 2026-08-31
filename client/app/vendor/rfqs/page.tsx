@@ -3,12 +3,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { useAuth } from "@/context/auth-context";
 import { apiClient } from "@/lib/api-client";
+import { VendorNavbar } from "@/components/vendor-navbar";
 import {
   FileCode,
   Loader2,
-  LogOut,
   Eye,
   Calendar,
   Building2,
@@ -78,18 +77,12 @@ export default function VendorRfqsPage() {
     }
   }, [router]);
 
-  const handleLogout = () => {
-    localStorage.removeItem("vendorToken");
-    localStorage.removeItem("vendorInfo");
-    router.push("/vendor/login");
-  };
-
   if (loading && rfqs.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white text-slate-600 font-sans">
-        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-6 py-4 rounded-2xl shadow-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-[#2383E2]" />
-          <span className="text-sm font-medium text-slate-700">Loading Vendor Portal RFQs...</span>
+      <div className="min-h-screen flex items-center justify-center bg-[#161616] text-white font-sans">
+        <div className="flex items-center gap-3 bg-[#1e1e1e] border border-neutral-800 px-6 py-4 rounded-2xl shadow-xl">
+          <Loader2 className="w-5 h-5 animate-spin text-white" />
+          <span className="text-xs font-mono text-neutral-400">Loading Vendor Portal RFQs...</span>
         </div>
       </div>
     );
@@ -98,51 +91,29 @@ export default function VendorRfqsPage() {
   if (!vendorInfo) return null;
 
   return (
-    <div className="min-h-screen bg-[#FAFBFD] text-slate-900 flex flex-col font-sans selection:bg-[#2383E2] selection:text-white">
-      {/* Navbar */}
-      <header className="border-b border-slate-200 bg-white sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/vendor/dashboard" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-md bg-[#2383E2] flex items-center justify-center text-white font-black text-lg shadow-sm">
-                V
-              </div>
-              <span className="font-extrabold text-xl text-slate-950 tracking-tight">Vendor Portal</span>
-            </Link>
-            <span className="text-slate-300">|</span>
-            <span className="text-xs font-bold text-[#2383E2]">{vendorInfo.name}</span>
-          </div>
-
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-slate-600">
-            <Link href="/vendor/dashboard" className="hover:text-slate-950 transition">Dashboard</Link>
-            <Link href="/vendor/rfqs" className="text-[#2383E2] font-semibold">Assigned RFQs</Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-xs font-semibold text-slate-700 transition cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Logout</span>
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#161616] text-white flex flex-col font-sans selection:bg-white selection:text-black">
+      {/* Vendor Navigation Navbar */}
+      <VendorNavbar activePath="/vendor/rfqs" />
 
       {/* Main Content */}
-      <main className="flex-1 max-w-5xl w-full mx-auto px-6 py-10 flex flex-col gap-6">
-        {/* Banner */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-          <h1 className="text-2xl font-extrabold text-slate-950 tracking-tight">Requests for Quotations (RFQs)</h1>
-          <p className="text-slate-500 text-xs mt-1">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
+        {/* Banner Container */}
+        <div className="bg-[#1e1e1e] p-6 sm:p-8 rounded-3xl border border-neutral-800/80 shadow-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-[10px] font-mono font-extrabold uppercase tracking-widest mb-3">
+            <FileCode className="w-3.5 h-3.5" />
+            <span>Buyer RFQs</span>
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl font-normal text-white tracking-tight">
+            Requests for Quotations (RFQs)
+          </h1>
+          <p className="text-neutral-400 text-xs sm:text-sm mt-1.5 font-sans">
             Review RFQs issued to {vendorInfo.name} by enterprise buyers.
           </p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center justify-between">
+          <div className="p-4 rounded-2xl bg-red-950/40 border border-red-500/40 text-red-300 text-xs flex items-center justify-between font-sans">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="font-bold cursor-pointer">✕</button>
           </div>
@@ -150,47 +121,47 @@ export default function VendorRfqsPage() {
 
         {/* Vendor RFQ Cards Grid */}
         {rfqs.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 shadow-sm">
-            <FileCode className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-            <h3 className="font-bold text-slate-800 text-sm mb-1">No Assigned RFQs</h3>
-            <p className="text-xs text-slate-500">You currently have no active sourcing RFQs assigned to {vendorInfo.name}.</p>
+          <div className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-12 text-center text-neutral-400 shadow-2xl font-sans">
+            <FileCode className="w-10 h-10 text-neutral-600 mx-auto mb-3" />
+            <h3 className="font-serif text-lg text-white mb-1">No Assigned RFQs</h3>
+            <p className="text-xs text-neutral-400">You currently have no active sourcing RFQs assigned to {vendorInfo.name}.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 font-sans">
             {rfqs.map((rfq) => (
-              <div key={rfq.id} className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between gap-4">
+              <div key={rfq.id} className="bg-[#1e1e1e] border border-neutral-800/80 rounded-3xl p-6 shadow-xl flex flex-col justify-between gap-5 hover:border-neutral-700 transition">
                 <div>
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[11px] font-mono font-bold text-[#2383E2] bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-full">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <span className="text-xs font-mono font-extrabold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-2.5 py-0.5 rounded-full">
                       {rfq.rfqNumber}
                     </span>
-                    <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                       {rfq.status}
                     </span>
                   </div>
 
-                  <h3 className="font-extrabold text-slate-950 text-base mb-1">{rfq.title}</h3>
+                  <h3 className="font-serif text-xl font-normal text-white mb-2">{rfq.title}</h3>
 
-                  <div className="space-y-1 text-xs text-slate-600 mt-3">
+                  <div className="space-y-1.5 text-xs text-neutral-400 mt-3 font-sans">
                     <div className="flex items-center gap-2">
-                      <Building2 className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Buyer: <strong className="text-slate-900">{rfq.buyer.name}</strong></span>
+                      <Building2 className="w-3.5 h-3.5 text-neutral-500" />
+                      <span>Buyer: <strong className="text-white">{rfq.buyer.name}</strong></span>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Quotation Deadline: <strong className="text-slate-900">{new Date(rfq.quotationDeadline).toLocaleDateString()}</strong></span>
+                      <Calendar className="w-3.5 h-3.5 text-neutral-500" />
+                      <span>Quotation Deadline: <strong className="text-white">{new Date(rfq.quotationDeadline).toLocaleDateString()}</strong></span>
                     </div>
                   </div>
 
                   {rfq.items.length > 0 && (
-                    <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Requirement Summary</span>
-                      <div className="font-semibold text-slate-900">
+                    <div className="mt-4 p-4 rounded-2xl bg-[#141414] border border-neutral-800 text-xs font-sans">
+                      <span className="text-[10px] font-mono text-neutral-500 uppercase block mb-1">Requirement Summary</span>
+                      <div className="font-semibold text-white">
                         {rfq.items[0].quantity} {rfq.items[0].unit || "PCS"} — {rfq.items[0].name}
                       </div>
                       {rfq.items[0].specifications && (
-                        <div className="text-[11px] text-slate-500 font-mono mt-0.5 truncate">
+                        <div className="text-[11px] text-neutral-400 font-mono mt-1 truncate">
                           Specs: {rfq.items[0].specifications}
                         </div>
                       )}
@@ -198,12 +169,12 @@ export default function VendorRfqsPage() {
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-end">
+                <div className="pt-4 border-t border-neutral-800/80 flex items-center justify-end font-sans">
                   <Link
                     href={`/vendor/rfqs/${rfq.id}`}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#2383E2] hover:bg-[#1D72C9] text-white font-semibold text-xs shadow-sm transition"
+                    className="inline-flex items-center gap-1.5 px-5 py-2 rounded-full bg-white hover:bg-neutral-200 text-black font-semibold text-xs transition shadow-md"
                   >
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-3.5 h-3.5 text-black" />
                     <span>View RFQ</span>
                   </Link>
                 </div>

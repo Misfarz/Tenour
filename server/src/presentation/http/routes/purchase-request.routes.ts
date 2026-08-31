@@ -9,24 +9,24 @@ const router = Router();
 
 router.use(authenticate, tenantContext);
 
-// Manager Approval Endpoints (Day 5 - Only MANAGER)
+// Manager / Admin Approval Endpoints (Only MANAGER & ORG_ADMIN)
 router.get(
   "/pending-approval",
-  requireRole(BuyerRole.MANAGER),
+  requireRole(BuyerRole.MANAGER, BuyerRole.ORG_ADMIN),
   PurchaseRequestController.getPendingApprovals
 );
 router.post(
   "/:id/approve",
-  requireRole(BuyerRole.MANAGER),
+  requireRole(BuyerRole.MANAGER, BuyerRole.ORG_ADMIN),
   PurchaseRequestController.approveRequest
 );
 router.post(
   "/:id/reject",
-  requireRole(BuyerRole.MANAGER),
+  requireRole(BuyerRole.MANAGER, BuyerRole.ORG_ADMIN),
   PurchaseRequestController.rejectRequest
 );
 
-// Standard Purchase Request Endpoints (Day 4)
+// Standard Purchase Request Endpoints
 router.post("/", PurchaseRequestController.createRequest);
 router.get("/", PurchaseRequestController.getRequests);
 router.get("/:id", PurchaseRequestController.getRequestById);
